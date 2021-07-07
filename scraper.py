@@ -9,38 +9,45 @@ class Scraper:
     def __init__(self):
         self.__tools_obj = tools.Tools()
         self.__logger = self.__tools_obj.get_logger()
-        self.__regex_dict = {
-            'Job Title': re.compile(r'', re.IGNORECASE),
-            'Job Description': re.compile(r'', re.IGNORECASE),
-            'Job Type': re.compile(r'', re.IGNORECASE),
-            'Job Location': re.compile(r'', re.IGNORECASE),
-            'Preferred Years of Experience': re.compile(r'', re.IGNORECASE),
-            'Preferred Previous Job Titles': re.compile(r'', re.IGNORECASE),
-            'Salary': re.compile(r'', re.IGNORECASE),
-            'Preferred Certifications': re.compile(r'', re.IGNORECASE),
-            'Soft Skills': re.compile(r'', re.IGNORECASE),
-            'Technical Skills': re.compile(r'', re.IGNORECASE),
-            'Preferred Majors': re.compile(r'', re.IGNORECASE),
-            'Min GPA requirement': re.compile(r'', re.IGNORECASE),
-            'Work environment': re.compile(r'', re.IGNORECASE)
+        self.__values_dict = {
+            'Job Title': '',
+            'Job Description': '',
+            'Job Application URL': '',
+            'Job Type': '',
+            'Job Location': [],
+            'Preferred Years of Experience': '',
+            'Preferred Previous Job Titles': '',
+            'Salary': '',
+            'Preferred Certifications': '',
+            'Soft Skills': '',
+            'Technical Skills': '',
+            'Preferred Majors': '',
+            'Min GPA requirement': '',
+            'Work environment': ''
         }
 
-    def scrape(self, job_html, job_url):
+    def scrape(self, job_json):
         try:
-            values_dict = {}
-            for key, value in self.__regex_dict.items():
-                aux = None
-                for regex in value:
-                    try:
-                        aux = regex.findall(job_html)[0]
+            self.__values_dict['Job Title'] = job_json['openGraphAttributes']['title']
+            self.__values_dict['Job Description'] = job_json['openGraphAttributes']['description']
+            self.__values_dict['Job Application URL'] = job_json['openGraphAttributes']['url']
+
+            for element in job_json['body']['children'][1]['children'][1]['children']:
+                try:
+                    if element['iconName'] == "JOB_TYPE":
+                        self.__values_dict['Job Type'].append(element['imageLabel'])
                         break
-                    except:
-                        pass
+                except:
+                    pass
 
-                values_dict[key] = aux
+            for element in job_json['body']['children'][1]['children'][0]['children']:
+                try:
+                    if element['iconName'] == "LOCATION":
+                        self.__values_dict['Job Location'].append(element['imageLabel'])
+                except:
+                    pass
 
-            values_dict['Job Application URL'] = job_url
-            return values_dict
+            return self.__values_dict
         except Exception as e:
             self.__logger.error(f"::Scraper:: Error found; {e}")
             raise

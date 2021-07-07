@@ -12,20 +12,33 @@ class MainCrawler:
     def __init__(self):
         self.__tools_obj = tools.Tools()
         self.__logger = self.__tools_obj.get_logger()
+        self.__result_list = []
 
     def crawl(self):
         try:
             self.__logger.info("Starting execution...")
 
-            job_url = 'https://aig.wd1.myworkdayjobs.com/en-US/aig/job/MA-Boston/Programs---Product-Line-Officer_JR2101885-1'
-            req = requests.get(job_url)
-            if req.status_code == 200:
-                ''' Scraping '''
-                scraper_obj = scraper.Scraper()
-                result_dict = scraper_obj.scrape(req.text, job_url)
+            # create session
+            session = requests.Session()
+            session.headers.update(HEADERS)
+            session.proxies.update({'http': f"http://{PARAMETERS['proxySocket']}",
+                                    'https': f"http://{PARAMETERS['proxySocket']}"})
 
-                ''' Saving '''
-                result_json = json.dumps(result_dict, ensure_ascii=False)
+            # iterate over urls
+            for job_url in URLS:
+                self.__logger.info(f"Trying: {job_url}")
+
+                # make requests
+                req = session.get(job_url)
+                if req.status_code == 200:
+                    self.__logger.info(f"Extracting information...")
+
+                    ''' Scraping '''
+                    scraper_obj = scraper.Scraper()
+                    self.__result_list.append(scraper_obj.scrape(json.loads(req.text)))
+
+            ''' Saving '''
+            result_json = json.dumps(self.__result_list, ensure_ascii=False)
 
             # execution finished
             self.__logger.info("Finishing execution...")
