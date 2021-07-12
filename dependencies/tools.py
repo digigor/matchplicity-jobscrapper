@@ -116,6 +116,24 @@ class Tools:
         return session
 
     @staticmethod
+    def search_keyword(keyword_list, string_text):
+        """
+             Search a keyword in a string
+        :param keyword_list: list of keywords
+        :param string_text: text no analyze
+        :return: values
+        """
+        try:
+            values_list = []
+            for keyword in keyword_list:
+                if str(string_text).__contains__(keyword):
+                    values_list.append(keyword)
+
+            return values_list
+        except Exception as e:
+            raise e
+
+    @staticmethod
     def clean_number(number):
         # Cleaning first non numeric characters
         number = re.findall(re.compile(r'[0-9].*', re.DOTALL), number)

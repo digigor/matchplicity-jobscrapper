@@ -10,7 +10,15 @@ URLS = ['https://aig.wd1.myworkdayjobs.com/es/aig/job/NC-Charlotte/Cyber-Securit
         'https://aig.wd1.myworkdayjobs.com/en-US/aig/job/MA-Boston/Programs---Product-Line-Officer_JR2101885-1',
         'https://aig.wd1.myworkdayjobs.com/en-US/aig/job/NY-New-York/Global-Head-of-Business-Development-for-Warranty---Service-Programs_JR2104383',
         'https://aig.wd1.myworkdayjobs.com/en-US/aig/job/TX-Amarillo/In-Force-Management-Associate-Case-Review_JR2104507',
-        'https://aig.wd1.myworkdayjobs.com/en-US/aig/job/340-Seven-Springs-Way-Brentwood-TN/Financial-Advisor---Kingsport--TN--Tri-Cities-_JR2104584-2']
+        'https://aig.wd1.myworkdayjobs.com/en-US/aig/job/340-Seven-Springs-Way-Brentwood-TN/Financial-Advisor---Kingsport--TN--Tri-Cities-_JR2104584-2',
+        'https://roberthalf.wd1.myworkdayjobs.com/RobertHalfStaffingCareers/job/MINNETONKA/Minnetonka-Accountemps-Staffing-Manager_JR-231971-1',
+        'https://roberthalf.wd1.myworkdayjobs.com/RobertHalfStaffingCareers/job/MINNETONKA/Minnetonka-RH-Finance-and-Accounting-Recruiting-Manager_JR-232605',
+        'https://roberthalf.wd1.myworkdayjobs.com/RobertHalfStaffingCareers/job/PORTLAND/Staffing-Manager--Accountemps---Portland_JR-232340/',
+        'https://roberthalf.wd1.myworkdayjobs.com/RobertHalfStaffingCareers/job/NEW-YORK-MIDTOWN/Managing-Vice-President-Strategic-Accounts_JR-232642/',
+        'https://cliftonlarsonallen.wd1.myworkdayjobs.com/en-US/CLA/job/Green-Bay-WI/Audit-Intern-Spring-2022---Green-Bay--WI_R4447-1',
+        'https://pfizer.wd1.myworkdayjobs.com/en-US/PfizerCareers/job/Austria---Orth/GMP-Training---Documentation-Junior-Specialist--m-f-d-_4818299-1',
+        'https://pfizer.wd1.myworkdayjobs.com/en-US/PfizerCareers/job/Bulgaria---Bulgaria/Supply-Chain-Quality-Specialist--part-time-role--temporary-contract-_4818820-1',
+        'https://pfizer.wd1.myworkdayjobs.com/en-US/PfizerCareers/job/United-States---Connecticut---Groton/DSRD-Graduate-Student-Internship_4801205']
 
 PROXYFLOW_URL = 'https://api.proxyflow.io/v1/proxy/random?token=ef54cdc884ff94d624e0f4e3&ssl=true&protocol=http'
 
@@ -34,3 +42,5 @@ HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
     'Accept': 'application/json,application/xml'
 }
+
+INPUT_FILE = 'input.xlsx'

@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 import json
+import pandas
 import requests
 from dependencies import tools
 from constants import *
@@ -12,6 +13,13 @@ class MainCrawler:
     def __init__(self):
         self.__tools_obj = tools.Tools()
         self.__logger = self.__tools_obj.get_logger()
+        df = pandas.read_excel(INPUT_FILE, na_filter=False)
+        self.__keywords_dict = {
+            'Titles': list(filter(None, df['Titles'].to_list())),
+            'Soft Skills': list(filter(None, df['Soft Skills'].to_list())),
+            'Technical Skills': list(filter(None, df['Technical Skills'].to_list())),
+            'Certifications': list(filter(None, df['Certifications'].to_list())),
+        }
         self.__result_list = []
 
     def crawl(self):
@@ -35,7 +43,7 @@ class MainCrawler:
 
                     ''' Scraping '''
                     scraper_obj = scraper.Scraper()
-                    self.__result_list.append(scraper_obj.scrape(json.loads(req.text)))
+                    self.__result_list.append(scraper_obj.scrape(json.loads(req.text), self.__keywords_dict))
 
             ''' Saving '''
             result_json = json.dumps(self.__result_list, ensure_ascii=False)
