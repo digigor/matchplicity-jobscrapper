@@ -129,7 +129,10 @@ class Tools:
                 if str(string_text).__contains__(keyword):
                     values_list.append(keyword)
 
-            return values_list
+            if values_list:
+                return values_list
+            else:
+                return None
         except Exception as e:
             raise e
 

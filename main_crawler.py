@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+import os
+import csv
 import json
 import pandas
 import requests
@@ -43,12 +45,33 @@ class MainCrawler:
 
                     ''' Scraping '''
                     scraper_obj = scraper.Scraper()
-                    self.__result_list.append(scraper_obj.scrape(json.loads(req.text), self.__keywords_dict))
+                    # self.__result_list.append(scraper_obj.scrape(json.loads(req.text), self.__keywords_dict))
+                    result_dict = scraper_obj.scrape(json.loads(req.text), self.__keywords_dict)
 
-            ''' Saving '''
-            result_json = json.dumps(self.__result_list, ensure_ascii=False)
+                    ''' Saving '''
+                    self.save_csv(result_dict)
+
+            # ''' Saving '''
+            # result_json = json.dumps(self.__result_list, ensure_ascii=False)
 
             # execution finished
             self.__logger.info("Finishing execution...")
         except Exception as e:
             self.__logger.error(f"::Main Crawler:: Error found; {e}")
+
+    def save_csv(self, values_dict):
+        try:
+            # open file
+            with open('output.csv', mode='a', encoding='utf-8') as csv_file:
+                headers = values_dict.keys()
+                writer = csv.DictWriter(csv_file, fieldnames=headers, delimiter=';', lineterminator='\n')
+
+                # create headers
+                if os.stat('output.csv').st_size == 0:
+                    writer.writeheader()
+
+                # save data
+                writer.writerow(values_dict)
+        except Exception as e:
+            self.__logger.error(f"::Saver:: Error found; {e}")
+            raise

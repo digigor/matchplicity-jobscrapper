@@ -11,14 +11,24 @@ URLS = ['https://aig.wd1.myworkdayjobs.com/es/aig/job/NC-Charlotte/Cyber-Securit
         'https://aig.wd1.myworkdayjobs.com/en-US/aig/job/NY-New-York/Global-Head-of-Business-Development-for-Warranty---Service-Programs_JR2104383',
         'https://aig.wd1.myworkdayjobs.com/en-US/aig/job/TX-Amarillo/In-Force-Management-Associate-Case-Review_JR2104507',
         'https://aig.wd1.myworkdayjobs.com/en-US/aig/job/340-Seven-Springs-Way-Brentwood-TN/Financial-Advisor---Kingsport--TN--Tri-Cities-_JR2104584-2',
+        'https://cliftonlarsonallen.wd1.myworkdayjobs.com/en-US/CLA/job/Green-Bay-WI/Audit-Intern-Spring-2022---Green-Bay--WI_R4447-1',
+        'https://cliftonlarsonallen.wd1.myworkdayjobs.com/en-US/CLA/job/St-Louis-MO/Senior-Accountant_R5597',
+        'https://cliftonlarsonallen.wd1.myworkdayjobs.com/en-US/CLA/job/Greenwood-Village-CO/Staff-Accountant---Nonprofit_R5862',
+        'https://pfizer.wd1.myworkdayjobs.com/en-US/PfizerCareers/job/Austria---Orth/GMP-Training---Documentation-Junior-Specialist--m-f-d-_4818299-1',
+        'https://pfizer.wd1.myworkdayjobs.com/en-US/PfizerCareers/job/Bulgaria---Bulgaria/Supply-Chain-Quality-Specialist--part-time-role--temporary-contract-_4818820-1',
+        'https://pfizer.wd1.myworkdayjobs.com/en-US/PfizerCareers/job/United-States---Connecticut---Groton/DSRD-Graduate-Student-Internship_4801205',
+        'https://walmart.wd5.myworkdayjobs.com/en-US/WalmartExternal/job/US-NJ-HOBOKEN-Home-Office-121-River-St/Principal-Software-Engineer---Chatbot_R-537659',
+        'https://walmart.wd5.myworkdayjobs.com/en-US/WalmartExternal/job/CAN-BC-VICTORIA-03109-WM-SUPERCENTER/Customer-Experience_R-258146-1',
+        'https://walmart.wd5.myworkdayjobs.com/en-US/WalmartExternal/job/US-AR-BENTONVILLE-Home-Office-ISD-Office---DGTC/Senior-Manager-I--Software-Engineering_R-645761-1',
+        'https://walmart.wd5.myworkdayjobs.com/en-US/WalmartExternal/job/US-AR-BENTONVILLE-Home-Office-608-Building/Senior-Manager-II--Software-Engineering_R-588583-2',
+        'https://boeing.wd1.myworkdayjobs.com/en-US/NABA/job/USA---Long-Beach-CA/Senior-C-17-Contracts-and-Pricing-Representative_00000241128-2',
+        'https://boeing.wd1.myworkdayjobs.com/en-US/NABA/job/USA---Charleston-SC/Cost-Recovery-Analyst_00000247264-3',
+        'https://roberthalf.wd1.myworkdayjobs.com/en-US/ProtivitiExperiencedCareers/job/TORONTO/Toronto-Internal-Audit-Financial-Advisory-Senior-Manager_JR-236098',
         'https://roberthalf.wd1.myworkdayjobs.com/RobertHalfStaffingCareers/job/MINNETONKA/Minnetonka-Accountemps-Staffing-Manager_JR-231971-1',
         'https://roberthalf.wd1.myworkdayjobs.com/RobertHalfStaffingCareers/job/MINNETONKA/Minnetonka-RH-Finance-and-Accounting-Recruiting-Manager_JR-232605',
         'https://roberthalf.wd1.myworkdayjobs.com/RobertHalfStaffingCareers/job/PORTLAND/Staffing-Manager--Accountemps---Portland_JR-232340/',
         'https://roberthalf.wd1.myworkdayjobs.com/RobertHalfStaffingCareers/job/NEW-YORK-MIDTOWN/Managing-Vice-President-Strategic-Accounts_JR-232642/',
-        'https://cliftonlarsonallen.wd1.myworkdayjobs.com/en-US/CLA/job/Green-Bay-WI/Audit-Intern-Spring-2022---Green-Bay--WI_R4447-1',
-        'https://pfizer.wd1.myworkdayjobs.com/en-US/PfizerCareers/job/Austria---Orth/GMP-Training---Documentation-Junior-Specialist--m-f-d-_4818299-1',
-        'https://pfizer.wd1.myworkdayjobs.com/en-US/PfizerCareers/job/Bulgaria---Bulgaria/Supply-Chain-Quality-Specialist--part-time-role--temporary-contract-_4818820-1',
-        'https://pfizer.wd1.myworkdayjobs.com/en-US/PfizerCareers/job/United-States---Connecticut---Groton/DSRD-Graduate-Student-Internship_4801205']
+        'https://roberthalf.wd1.myworkdayjobs.com/en-US/ProtivitiExperiencedCareers/job/DALLAS/Technology-Consulting-Digital-Identity--Okta-Architect--Senior-Manager_JR-235585']
 
 PROXYFLOW_URL = 'https://api.proxyflow.io/v1/proxy/random?token=ef54cdc884ff94d624e0f4e3&ssl=true&protocol=http'
 

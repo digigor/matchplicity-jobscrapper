@@ -10,7 +10,7 @@ class Scraper:
         self.__tools_obj = tools.Tools()
         self.__logger = self.__tools_obj.get_logger()
         self.__regex_dict = {
-            'Preferred Years of Experience': re.compile(r'([\d]+)(?=\+? years.*?experience)', re.IGNORECASE)
+            'Preferred Years of Experience': re.compile(r'([\d]+)(?=\+?-? (?:or more )?years.*?experience)', re.IGNORECASE)
         }
         self.__values_dict = {
             'Job Title': '',
