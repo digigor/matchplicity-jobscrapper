@@ -126,7 +126,7 @@ class Tools:
         try:
             values_list = []
             for keyword in keyword_list:
-                if str(string_text).__contains__(keyword):
+                if re.search(fr"\b{keyword}\.?\b", string_text, re.IGNORECASE):
                     values_list.append(keyword)
 
             if values_list:

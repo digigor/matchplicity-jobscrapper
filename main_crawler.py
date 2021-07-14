@@ -1,13 +1,11 @@
 # -*- coding: UTF-8 -*-
 
-import os
-import csv
 import json
-import pandas
+import re
 import requests
 from dependencies import tools
 from constants import *
-import scraper
+import crawler
 
 
 class MainCrawler:
@@ -15,14 +13,6 @@ class MainCrawler:
     def __init__(self):
         self.__tools_obj = tools.Tools()
         self.__logger = self.__tools_obj.get_logger()
-        df = pandas.read_excel(INPUT_FILE, na_filter=False)
-        self.__keywords_dict = {
-            'Titles': list(filter(None, df['Titles'].to_list())),
-            'Soft Skills': list(filter(None, df['Soft Skills'].to_list())),
-            'Technical Skills': list(filter(None, df['Technical Skills'].to_list())),
-            'Certifications': list(filter(None, df['Certifications'].to_list())),
-        }
-        self.__result_list = []
 
     def crawl(self):
         try:
@@ -35,43 +25,47 @@ class MainCrawler:
                                     'https': f"http://{PARAMETERS['proxySocket']}"})
 
             # iterate over urls
-            for job_url in URLS:
-                self.__logger.info(f"Trying: {job_url}")
+            for main_url in URLS:
+                try:
+                    self.__logger.info(f"Searching: {main_url}")
 
-                # make requests
-                req = session.get(job_url)
-                if req.status_code == 200:
-                    self.__logger.info(f"Extracting information...")
+                    job_urls = set()
+                    index = 50
+                    next_url = None
 
-                    ''' Scraping '''
-                    scraper_obj = scraper.Scraper()
-                    # self.__result_list.append(scraper_obj.scrape(json.loads(req.text), self.__keywords_dict))
-                    result_dict = scraper_obj.scrape(json.loads(req.text), self.__keywords_dict)
+                    # make requests
+                    req = session.get(main_url)
+                    while True:
+                        if req.status_code == 200:
+                            # load response json
+                            main_json = json.loads(req.text)
 
-                    ''' Saving '''
-                    self.save_csv(result_dict)
+                            # iterate over json
+                            for element in main_json['body']['children'][0]['children'][0]['listItems']:
+                                try:
+                                    job_url = element['title']['commandLink']
+                                    job_url = main_url + re.findall(r'(/job/.*)', job_url)[0]
+                                    job_urls.add(job_url)
+                                except Exception as e:
+                                    self.__logger.error(f"Url: {req.url}; Error found; {e}")
 
-            # ''' Saving '''
-            # result_json = json.dumps(self.__result_list, ensure_ascii=False)
+                            if not next_url:
+                                # get next page
+                                next_url = main_json['body']['children'][0]['endPoints'][1]['uri']
+                                next_url = main_url + re.findall(r'(/fs/.*)', next_url)[0]
+
+                            # make requests
+                            req = session.get(f"{next_url}/{index}")
+                            index += 50
+                        else:
+                            break
+
+                    crawler_obj = crawler.Crawler()
+                    crawler_obj.run(job_urls)
+                except Exception as e:
+                    self.__logger.error(f"{main_url}: Error found; {e}")
 
             # execution finished
             self.__logger.info("Finishing execution...")
         except Exception as e:
             self.__logger.error(f"::Main Crawler:: Error found; {e}")
-
-    def save_csv(self, values_dict):
-        try:
-            # open file
-            with open('output.csv', mode='a', encoding='utf-8') as csv_file:
-                headers = values_dict.keys()
-                writer = csv.DictWriter(csv_file, fieldnames=headers, delimiter=';', lineterminator='\n')
-
-                # create headers
-                if os.stat('output.csv').st_size == 0:
-                    writer.writeheader()
-
-                # save data
-                writer.writerow(values_dict)
-        except Exception as e:
-            self.__logger.error(f"::Saver:: Error found; {e}")
-            raise
