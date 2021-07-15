@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
-import re
 
+import re
 from dependencies import tools
 
 

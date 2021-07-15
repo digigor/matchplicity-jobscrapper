@@ -10,27 +10,18 @@ URLS = ['https://aig.wd1.myworkdayjobs.com/aig',
         'https://boeing.wd1.myworkdayjobs.com/NABA',
         'https://walmart.wd5.myworkdayjobs.com/en-US/WalmartExternal']
 
-PROXYFLOW_URL = 'https://api.proxyflow.io/v1/proxy/random?token=ef54cdc884ff94d624e0f4e3&ssl=true&protocol=http'
-
-PARAMETERS = {
-    'waitTime': 1,
-    'waitTime2': 2,
-    'waitMaxTime': 20,
-    'waitingTime': 5,
-    'waitRetryTime': 90,
-    'headless': True,
-    # stormproxies/proxyflow
-    'proxyType': 'stormproxies',
-    'proxySocket': '104.194.139.168:3199'
-}
+PROXYSOCKET = '104.194.139.168:3199'
 
 RETRY_TIMES = 5
-
-ANTICAPTCHA_KEY = '66ca75483fcda5a6dbbda8ffa404e2a3'
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
     'Accept': 'application/json,application/xml'
 }
 
-INPUT_FILE = 'input.xlsx'
+INPUT_FILE = 'dependencies/input.xlsx'
+
+API_DEBUG = True
+API_PORT = 5678
+
+POST_TIME = 60

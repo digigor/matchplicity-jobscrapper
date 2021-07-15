@@ -4,7 +4,7 @@ import json
 import re
 import requests
 from dependencies import tools
-from constants import *
+from config import *
 import crawler
 
 
@@ -19,10 +19,7 @@ class MainCrawler:
             self.__logger.info("Starting execution...")
 
             # create session
-            session = requests.Session()
-            session.headers.update(HEADERS)
-            session.proxies.update({'http': f"http://{PARAMETERS['proxySocket']}",
-                                    'https': f"http://{PARAMETERS['proxySocket']}"})
+            session = self.__tools_obj.create_session()
 
             # iterate over urls
             for main_url in URLS:
@@ -69,3 +66,7 @@ class MainCrawler:
             self.__logger.info("Finishing execution...")
         except Exception as e:
             self.__logger.error(f"::Main Crawler:: Error found; {e}")
+
+
+if __name__ == '__main__':
+    MainCrawler().crawl()
