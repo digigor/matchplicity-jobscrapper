@@ -11,13 +11,17 @@ CORS(app)
 
 @app.route('/get-job', methods=['GET'])
 def get_job():
+    # receive parameters
     params = request.args
     job_urls = []
+    # save values in a list
     for key, value in params.items():
         job_urls.append(value)
 
+    # call crawler
     results = crawler.Crawler().run(job_urls)
 
+    # return json response
     response = {'results': results, 'success': True, 'msg': "Results obtained", 'error_code': 0}
     return jsonify(response)
 
