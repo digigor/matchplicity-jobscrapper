@@ -1,16 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-URLS = ['https://aig.wd1.myworkdayjobs.com/aig',
-        'https://cliftonlarsonallen.wd1.myworkdayjobs.com/en-US/CLA',
-        'https://humana.wd5.myworkdayjobs.com/en-US/Humana_External_Career_Site',
-        'https://careers.humana.com',
-        'https://pfizer.wd1.myworkdayjobs.com/en-US/PfizerCareers',
-        'https://roberthalf.wd1.myworkdayjobs.com/en-US/ProtivitiExperiencedCareers',
-        'https://protiviti.recsolu.com/job_boards/S29cfuRzXlvTQNWy1ttINA',
-        'https://boeing.wd1.myworkdayjobs.com/NABA',
-        'https://walmart.wd5.myworkdayjobs.com/en-US/WalmartExternal']
-
-PROXYSOCKET = '104.194.139.168:3199'
+PROXYSOCKET = ''
 
 RETRY_TIMES = 5
 
