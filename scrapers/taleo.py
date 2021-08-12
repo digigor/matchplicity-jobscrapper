@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 import re
-import lxml
+from lxml import html
 from dependencies import tools
 
 
@@ -41,40 +41,42 @@ class Scraper:
             'Work environment': ''
         }
 
-    def scrape(self, job_json, keywords_dict):
+        self.__xpath_dict = {
+            "title":['//span[@class="titlepage" and contains(@id, "Title")]/text()'],
+            "description":['//div[@class="contentlinepanel" and contains(@id, "requisitionDescriptionInterface.ID2011.row1")]//text()'],
+            "full_type" : ['//span[@id="requisitionDescriptionInterface.ID1912.row1" ]/text()'],
+            "location" : ['//span[@id="requisitionDescriptionInterface.ID1714.row1" ]/text()']
+        }
+
+    def find_element(self, key, tree, concat = False):
+        for xpth in self.__xpath_dict[key]:
+            result = tree.xpath(xpth)
+            if result:
+                if concat:
+                    return ' '.join(result)
+                return result[0]
+        return ''
+    
+    
+
+    def scrape(self, job_html, keywords_dict):
         try:
-            self.__values_dict['Job Title'] = job_json['openGraphAttributes']['title']
 
-            for element in job_json['body']['children'][1]['children'][0]['children']:
-                try:
-                    if element['ecid'].__contains__("jobDescription"):
-                        self.__values_dict['Job Description'] = element['text']
-                        break
-                except:
-                    pass
+            #TODO pide el html entero de cada texto
 
-            # self.__values_dict['Job Application URL'] = job_json['openGraphAttributes']['url'] + '/apply'
-            self.__values_dict['Job Application URL'] = job_json['openGraphAttributes']['url']
+            tree = html.document_fromstring(job_html)
 
-            for element in job_json['body']['children'][1]['children'][1]['children']:
-                try:
-                    if element['iconName'] == "JOB_TYPE":
-                        self.__values_dict['Job Type'] = element['imageLabel']
-                        break
-                except:
-                    pass
+            self.__values_dict['Job Title'] = tree.xpath('//span[@class="titlepage" and contains(@id, "Title")]/text()')  # self.find_element("title", tree)
 
-            aux = []
-            for element in job_json['body']['children'][1]['children'][0]['children']:
-                try:
-                    if element['iconName'] == "LOCATION":
-                        aux.append(element['imageLabel'])
-                except:
-                    pass
-            if aux:
-                self.__values_dict['Job Location'] = aux
+            self.__values_dict['Job Description'] = self.find_element("description", tree, concat=True)
 
-            years_list = self.__regex_dict['Years of Experience'].findall(job_json['openGraphAttributes']['description'])
+            self.__values_dict['Job Application URL'] = '' #TODO ver que poner aqui, pide login
+
+            self.__values_dict['Job Type'] = self.find_element("full_type", tree)
+
+            self.__values_dict['Job Location'] = self.find_element("location", tree)
+
+            years_list = self.__regex_dict['Years of Experience'].findall(self.__values_dict['Job Description'] )
             aux = ''
             for year in years_list:
                 if not aux:
@@ -85,36 +87,36 @@ class Scraper:
             self.__values_dict['Preferred Years of Experience'] = aux
 
             self.__values_dict['Preferred Certifications'] = self.__tools_obj.search_keyword(
-                keywords_dict['Certifications'], job_json['openGraphAttributes']['description'])
+                keywords_dict['Certifications'],self.__values_dict['Job Description'] )
 
-            aux = self.__regex_dict['Salary'].findall(job_json['openGraphAttributes']['description'])
+            aux = self.__regex_dict['Salary'].findall(self.__values_dict['Job Description'] )
             if aux:
                 self.__values_dict['Salary'] = aux[0]
 
             self.__values_dict['Preferred Previous Job Titles'] = self.__tools_obj.search_keyword(
-                keywords_dict['Titles'], job_json['openGraphAttributes']['description'])
+                keywords_dict['Titles'], self.__values_dict['Job Description'])
 
             self.__values_dict['Soft Skills'] = self.__tools_obj.search_keyword(
-                keywords_dict['Soft Skills'], job_json['openGraphAttributes']['description'])
+                keywords_dict['Soft Skills'],self.__values_dict['Job Description'])
 
             self.__values_dict['Technical Skills'] = self.__tools_obj.search_keyword(
-                keywords_dict['Technical Skills'], job_json['openGraphAttributes']['description'])
+                keywords_dict['Technical Skills'], self.__values_dict['Job Description'])
 
             self.__values_dict['Preferred Majors'] = self.__tools_obj.search_keyword(
-                keywords_dict['Majors'], job_json['openGraphAttributes']['description'])
+                keywords_dict['Majors'], self.__values_dict['Job Description'])
 
-            aux = self.__regex_dict['GPA'].findall(job_json['openGraphAttributes']['description'])
+            aux = self.__regex_dict['GPA'].findall(self.__values_dict['Job Description'])
             if aux:
                 self.__values_dict['Min GPA requirement'] = aux[0]
 
-            if self.__regex_dict['Hybrid environment'].search(job_json['openGraphAttributes']['description']):
+            if self.__regex_dict['Hybrid environment'].search(self.__values_dict['Job Description']):
                 self.__values_dict['Work environment'] = "Hybrid"
-            elif self.__regex_dict['Virtual environment'].search(job_json['openGraphAttributes']['description']):
-                if self.__regex_dict['Physical environment'].search(job_json['openGraphAttributes']['description']):
+            elif self.__regex_dict['Virtual environment'].search(self.__values_dict['Job Description']):
+                if self.__regex_dict['Physical environment'].search(self.__values_dict['Job Description']):
                     self.__values_dict['Work environment'] = "Hybrid"
                 else:
                     self.__values_dict['Work environment'] = "Virtual"
-            elif self.__regex_dict['Physical environment'].search(job_json['openGraphAttributes']['description']):
+            elif self.__regex_dict['Physical environment'].search(self.__values_dict['Job Description']):
                 self.__values_dict['Work environment'] = "Physical"
 
             return self.__values_dict
