@@ -30,7 +30,7 @@ class Crawler:
             # create session
             session = self.__tools_obj.create_session()
 
-            with ThreadPoolExecutor() as executor:
+            with ThreadPoolExecutor(max_workers=1) as executor: #TODO quitar el max_workers
                 # iterate over urls
                 for count, job_url in enumerate(job_urls):
                     executor.submit(self.crawl_requests, session, count, job_url['url'])
@@ -56,8 +56,6 @@ class Crawler:
                 elif 'taleo' in job_url:
                     self.__result_list.append(
                         taleo.Scraper().scrape(req.text, self.__keywords_dict))
-
-
 
             else:
                 # error job url
