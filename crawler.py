@@ -8,6 +8,7 @@ from config import *
 from scrapers import myworkdayjobs, taleo
 
 
+
 class Crawler:
 
     def __init__(self):
@@ -30,7 +31,7 @@ class Crawler:
             # create session
             session = self.__tools_obj.create_session()
 
-            with ThreadPoolExecutor(max_workers=1) as executor: #TODO quitar el max_workers
+            with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor: #TODO quitar el max_workers
                 # iterate over urls
                 for count, job_url in enumerate(job_urls):
                     executor.submit(self.crawl_requests, session, count, job_url['url'])
@@ -46,20 +47,39 @@ class Crawler:
         try:
             self.__logger.info(f"Job {count + 1} - \"{job_url}\": Extracting information")
 
-            # make requests
-            req = session.get(job_url)
-            if req.status_code == 200:
-                ''' Scraping '''
-                if 'myworkdayjobs' in job_url:
+            # Requests strategy
+            # Agregar mas urls de Requests aqui
+            if 'myworkdayjobs' in job_url:
+                req = session.get(job_url)
+
+                if req.status_code == 200:
+
+                    if 'myworkdayjobs' in job_url:
+                        self.__result_list.append(
+                            myworkdayjobs.Scraper().scrape(json.loads(req.text), self.__keywords_dict))
+
+                else:
+                    # error job url
+                    self.__logger.error(f"Status Code Error: {req.status_code}; Url: {req.url}")
+
+            # Selenium Strategy
+            # Agregar mas urls de selenium aqui
+            elif 'taleo' in job_url:
+                driver = self.__tools_obj.create_driver()
+
+                if 'taleo' in job_url:
+
+                    driver.get(job_url)
                     self.__result_list.append(
-                        myworkdayjobs.Scraper().scrape(json.loads(req.text), self.__keywords_dict))
-                elif 'taleo' in job_url:
-                    self.__result_list.append(
-                        taleo.Scraper().scrape(req.text, self.__keywords_dict))
+                        taleo.Scraper().scrape(driver, self.__keywords_dict, job_url))
+
+                driver.close()
 
             else:
-                # error job url
-                self.__logger.error(f"Status Code Error: {req.status_code}; Url: {req.url}")
+                self.__logger.error(f"Wrong URL; Url: {job_url}")
+
+            self.__logger.info(f"Job {count + 1} - \"{job_url}\": Scraping finished")
+
 
         except Exception as e:
             self.__logger.error(f"Job {count + 1} - {job_url}; Error found; {e}")

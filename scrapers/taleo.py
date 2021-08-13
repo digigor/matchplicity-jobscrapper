@@ -1,15 +1,16 @@
 # -*- coding: UTF-8 -*-
 
 import re
-from lxml import html
-from dependencies import tools
+from dependencies import tools, data_cleaning
 
 
 class Scraper:
 
     def __init__(self):
         self.__tools_obj = tools.Tools()
+        self.__data_cleaning = data_cleaning.DataCleaner()
         self.__logger = self.__tools_obj.get_logger()
+
         self.__regex_dict = {
             'Years of Experience':
                 re.compile(r'(?:\s)(\d)(?: ?\+?-? (?:or more )?years.*?experience)', re.IGNORECASE),
@@ -42,41 +43,63 @@ class Scraper:
         }
 
         self.__xpath_dict = {
-            "title":['//span[@class="titlepage" and contains(@id, "Title")]/text()'],
-            "description":['//div[@class="contentlinepanel" and contains(@id, "requisitionDescriptionInterface.ID2011.row1")]//text()'],
-            "full_type" : ['//span[@id="requisitionDescriptionInterface.ID1912.row1" ]/text()'],
-            "location" : ['//span[@id="requisitionDescriptionInterface.ID1714.row1" ]/text()']
+            "title": ['//*[@id="requisitionDescriptionInterface.reqTitleLinkAction.row1"]'],
+            "description": ['//*[@id="requisitionDescriptionInterface.ID1722.row1"]',
+                            '//*[@id="requisitionDescriptionInterface.ID2011.row1"]',
+                            '//*[@id="requisitionDescriptionInterface.ID1531.row1"]'],
+            "job_type": ['//*[@id="requisitionDescriptionInterface.ID1808.row1"]',
+                          '//*[@id="requisitionDescriptionInterface.ID1912.row1"]',
+                          '//*[@id="requisitionDescriptionInterface.ID1603.row1"]'],
+            "job_location": ['//*[@id="requisitionDescriptionInterface.ID1724.row1"]',
+                             '//*[@id="requisitionDescriptionInterface.ID1714.row1"]',
+                             '//*[@id="requisitionDescriptionInterface.ID1657.row1"]']
         }
 
-    def find_element(self, key, tree, concat = False):
-        for xpth in self.__xpath_dict[key]:
-            result = tree.xpath(xpth)
-            if result:
-                if concat:
-                    return ' '.join(result)
-                return result[0]
-        return ''
-    
-    
 
-    def scrape(self, job_html, keywords_dict):
+
+    def scrape(self, driver, keywords_dict, job_url):
         try:
+            # Title
+            for xpath in self.__xpath_dict['title']:
+                result = driver.find_elements_by_xpath(xpath)
+                if result:
+                    self.__values_dict['Job Title'] = result[0].text
+                    break
 
-            #TODO pide el html entero de cada texto
+            # Description
+            for xpath in self.__xpath_dict['description']:
+                result = driver.find_elements_by_xpath(xpath)
+                if result:
+                    # save the HTML tags
+                    self.__values_dict['Job Description'] = (result[0]).get_attribute('innerHTML')
+                    break
 
-            tree = html.document_fromstring(job_html)
+            # Application URL
+            self.__values_dict['Job Application URL'] = job_url
 
-            self.__values_dict['Job Title'] = tree.xpath('//span[@class="titlepage" and contains(@id, "Title")]/text()')  # self.find_element("title", tree)
+            # job types
+            for xpath in self.__xpath_dict['job_type']:
+                result = driver.find_elements_by_xpath(xpath)
+                if result:
 
-            self.__values_dict['Job Description'] = self.find_element("description", tree, concat=True)
+                    aux = self.__data_cleaning.MatcherParser(result[0].text)
 
-            self.__values_dict['Job Application URL'] = '' #TODO ver que poner aqui, pide login
+                    if 'experienced' in self.__data_cleaning.MatcherParser(result[0].text):
+                        self.__values_dict['Job Type'] = "Full Time"
+                    else:
+                        self.__values_dict['Job Type'] = result[0].text
+                    break
 
-            self.__values_dict['Job Type'] = self.find_element("full_type", tree)
+            # job location
+            for xpath in self.__xpath_dict['job_location']:
+                result = driver.find_elements_by_xpath(xpath)
+                if result:
+                    # save the HTML tags
+                    self.__values_dict['Job Location'] = result[0].text
+                    break
 
-            self.__values_dict['Job Location'] = self.find_element("location", tree)
-
-            years_list = self.__regex_dict['Years of Experience'].findall(self.__values_dict['Job Description'] )
+            # years of experience
+            years_list = self.__regex_dict['Years of Experience'].findall(driver.page_source)
             aux = ''
             for year in years_list:
                 if not aux:
@@ -84,40 +107,51 @@ class Scraper:
                 else:
                     if int(year) < aux:
                         aux = int(year)
+
             self.__values_dict['Preferred Years of Experience'] = aux
 
-            self.__values_dict['Preferred Certifications'] = self.__tools_obj.search_keyword(
-                keywords_dict['Certifications'],self.__values_dict['Job Description'] )
-
-            aux = self.__regex_dict['Salary'].findall(self.__values_dict['Job Description'] )
-            if aux:
-                self.__values_dict['Salary'] = aux[0]
-
+            # Previous job titles
             self.__values_dict['Preferred Previous Job Titles'] = self.__tools_obj.search_keyword(
-                keywords_dict['Titles'], self.__values_dict['Job Description'])
+                keywords_dict['Titles'], driver.page_source)
 
+            # Salary
+            result = self.__regex_dict['Salary'].findall(driver.page_source)
+            if result:
+                self.__values_dict['Salary'] = result[0]
+
+            # Preferred Certifications
+            self.__values_dict['Preferred Certifications'] = self.__tools_obj.search_keyword(
+                keywords_dict['Certifications'], driver.page_source)
+
+            # Soft Skills
             self.__values_dict['Soft Skills'] = self.__tools_obj.search_keyword(
-                keywords_dict['Soft Skills'],self.__values_dict['Job Description'])
+                keywords_dict['Soft Skills'], driver.page_source)
 
+            # Technical Skills
             self.__values_dict['Technical Skills'] = self.__tools_obj.search_keyword(
-                keywords_dict['Technical Skills'], self.__values_dict['Job Description'])
+                keywords_dict['Technical Skills'], driver.page_source)
 
+            # Preferred Majors
             self.__values_dict['Preferred Majors'] = self.__tools_obj.search_keyword(
-                keywords_dict['Majors'], self.__values_dict['Job Description'])
+                keywords_dict['Majors'], driver.page_source)
 
-            aux = self.__regex_dict['GPA'].findall(self.__values_dict['Job Description'])
-            if aux:
-                self.__values_dict['Min GPA requirement'] = aux[0]
+            # Salary
+            result = self.__regex_dict['GPA'].findall(driver.page_source)
+            if result:
+                self.__values_dict['Min GPA requirement'] = result[0]
 
-            if self.__regex_dict['Hybrid environment'].search(self.__values_dict['Job Description']):
+            # Work environment
+            if self.__regex_dict['Hybrid environment'].search(driver.page_source):
                 self.__values_dict['Work environment'] = "Hybrid"
-            elif self.__regex_dict['Virtual environment'].search(self.__values_dict['Job Description']):
-                if self.__regex_dict['Physical environment'].search(self.__values_dict['Job Description']):
+            elif self.__regex_dict['Virtual environment'].search(driver.page_source):
+                if self.__regex_dict['Physical environment'].search(driver.page_source):
                     self.__values_dict['Work environment'] = "Hybrid"
                 else:
                     self.__values_dict['Work environment'] = "Virtual"
-            elif self.__regex_dict['Physical environment'].search(self.__values_dict['Job Description']):
+            elif self.__regex_dict['Physical environment'].search(driver.page_source):
                 self.__values_dict['Work environment'] = "Physical"
+
+
 
             return self.__values_dict
         except Exception as e:

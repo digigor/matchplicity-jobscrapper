@@ -2,6 +2,8 @@
 
 PROXYSOCKET = ''
 
+MAX_WORKERS = 10
+
 RETRY_TIMES = 5
 
 HEADERS = {
@@ -15,3 +17,7 @@ API_DEBUG = True
 API_PORT = 5678
 
 POST_TIME = 60
+PARAMETERS = {
+    'headless': True,
+
+}
