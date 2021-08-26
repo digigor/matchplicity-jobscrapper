@@ -42,6 +42,8 @@ class Scraper:
 
     def scrape(self, job_json, keywords_dict):
         try:
+
+
             self.__values_dict['Job Title'] = job_json['openGraphAttributes']['title']
 
             for element in job_json['body']['children'][1]['children'][0]['children']:

@@ -3,5 +3,6 @@ openpyxl
 flask
 flask_cors
 requests
-cloudscraper
 selenium
+unicodedata2
+lxml

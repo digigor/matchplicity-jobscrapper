@@ -59,6 +59,7 @@ class Scraper:
 
     def scrape(self, driver, keywords_dict, job_url):
         try:
+
             # Title
             for xpath in self.__xpath_dict['title']:
                 result = driver.find_elements_by_xpath(xpath)
