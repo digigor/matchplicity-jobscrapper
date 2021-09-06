@@ -18,6 +18,12 @@ The data fields keeping in mind are the following:
 - job_gpa : digit
 - job_locations : array|object
 
+### Dependencies.
+
+* Python 3.8+
+
+* Firefox installed
+
 ### Strategy Used
 
 - I used "Flask" to create an api that receives the parameters, 
