@@ -107,4 +107,14 @@ curl --location --request POST 'http://151.80.33.51:6789/get-job' \
 ```
 #### Changelog:
 
+09/06/2021:
+
+- data fields for the JSON response refactored.
+
+- Added more tries and exceptions.
+
+- Added "the job is no longer available"
+
+- Regex expressions improved 
+
 'Francisco Battan. Informatics Engineer.'
