@@ -24,6 +24,8 @@ The data fields keeping in mind are the following:
 
 * Firefox installed
 
+* Geckodriver on PATH
+
 ### Strategy Used
 
 - I used "Flask" to create an api that receives the parameters, 
