@@ -51,6 +51,12 @@ Tested on Python 3.8
 - For the taleo platform and the ones using Selenium the server will consume at least 500 mb of ram and as many cpu as needed, per instance.
 So,if you have MAX_WORKERS = 10 and you execute 10 taleo urls the crawler will create 10 firefox instances.
   
+- For the taleo platform the URL must have the 'job' key with a value at the bottom for instance:
+  
+```
+https://ms.taleo.net/careersection/2/jobdetail.ftl?job=3183894
+```
+
 - if the job is no longer available the API will respond a msg on the "description" key called "the job is no longer available".
 for instance:
   
