@@ -46,7 +46,7 @@ class Scraper:
     def scrape(self, req, keywords_dict):
         try:
 
-            job_json = json.loads(req.text)
+            job_json = json.loads(req)
             if job_json['openGraphAttributes']['title']:
                 self.__values_dict['title'] = job_json['openGraphAttributes']['title']
 

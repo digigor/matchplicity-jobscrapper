@@ -14,7 +14,7 @@ HEADERS = {
 INPUT_FILE = 'dependencies/input.xlsx'
 
 API_DEBUG = True
-API_PORT = 5678
+API_PORT = 6789
 
 POST_TIME = 60
 PARAMETERS = {

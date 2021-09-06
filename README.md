@@ -42,9 +42,9 @@ Tested on Python 3.8
     
 2) install requirements doing:
 
-```pip install -r requirements```.
+```pip3 install -r requirements```.
 
-3) execute```python3 __init__.py```
+3) execute```python3 app.py runserver```
     
 #### Notes or Considerations
 
@@ -81,8 +81,24 @@ for instance:
 - If the url is a 404 error or not a 200 http status code, the API will respond: "Error_code": 404.
 
 #### Example of usage:
-
-
+```
+curl --location --request POST 'http://151.80.33.51:6789/get-job' \
+--header 'Content-Type: application/json' \
+--data-raw '[
+{
+    "url": "https://ms.taleo.net/careersection/2/jobdetail.ftl?job=3163603"
+},
+{
+    "url": "https://pfizer.wd1.myworkdayjobs.com/en-US/PfizerCareers/job/Costa-Rica---Escazu/Sr-Associate--Solution-and-Service-Management_4823561"
+},
+{
+    "url": "https://ms.taleo.net/careersection/2/jobdetail.ftl?job=3183894"
+},
+{
+    "url": "https://pfizer.wd1.myworkdayjobs.com/en-US/PfizerCareers/job/Belgium---Puurs/Technisch-Operator-Vaccin---3-ploegen_4782834"
+}
+]'
+```
 #### Changelog:
 
 'Francisco Battan. Informatics Engineer.'
