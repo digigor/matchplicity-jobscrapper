@@ -9,17 +9,14 @@ app = Flask(__name__)
 CORS(app)
 
 
-@app.route('/get-job', methods=['GET'])
+@app.route('/get-job', methods=['POST'])
 def get_job():
     # receive parameters
-    params = request.args
-    job_urls = []
-    # save values in a list
-    for key, value in params.items():
-        job_urls.append(value)
+    result_list = request.json
+
 
     # call crawler
-    results = crawler.Crawler().run(job_urls)
+    results = crawler.Crawler().run(result_list)
 
     # return json response
     response = {'results': results, 'success': True, 'msg': "Results obtained", 'error_code': 0}
