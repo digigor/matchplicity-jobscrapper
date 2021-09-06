@@ -1,7 +1,8 @@
 # -*- coding: UTF-8 -*-
 
 import re
-from dependencies import tools
+import json
+from dependencies import tools, data_cleaning
 
 
 class Scraper:
@@ -9,6 +10,7 @@ class Scraper:
     def __init__(self):
         self.__tools_obj = tools.Tools()
         self.__logger = self.__tools_obj.get_logger()
+        self.__data_cleaning = data_cleaning.DataCleaner()
         self.__regex_dict = {
             'Years of Experience':
                 re.compile(r'(?:\s)(\d)(?: ?\+?-? (?:or more )?years.*?experience)', re.IGNORECASE),
@@ -24,43 +26,44 @@ class Scraper:
                 re.compile(r'(hybrid environment|work at home/office|office and home|hybrid/work at home)', re.IGNORECASE)
         }
         self.__values_dict = {
-            'Job Title': '',
-            'Job Description': '',
-            'Job Application URL': '',
-            'Job Type': '',
-            'Job Location': '',
-            'Preferred Years of Experience': '',
-            'Preferred Previous Job Titles': '',
-            'Salary': '',
-            'Preferred Certifications': '',
-            'Soft Skills': '',
-            'Technical Skills': '',
-            'Preferred Majors': '',
-            'Min GPA requirement': '',
-            'Work environment': ''
+            'title': None,
+            'description': None,
+            'application_url': None,
+            'job_type': [],
+            'job_locations': [],
+            'preferred_years_experience': [],
+            'preferred_previous_job_title': None,
+            'salary': None,
+            'preferred_certification': [],
+            'preferred_soft_skill': [],
+            'preferred_technical_skill': [],
+            'job_preferred_major': [],
+            'job_gpa': None,
+            #"'Work environment': '',
+            #'is_nation_wid': None
         }
 
-    def scrape(self, job_json, keywords_dict):
+    def scrape(self, req, keywords_dict):
         try:
 
-
-            self.__values_dict['Job Title'] = job_json['openGraphAttributes']['title']
+            job_json = json.loads(req.text)
+            if job_json['openGraphAttributes']['title']:
+                self.__values_dict['title'] = job_json['openGraphAttributes']['title']
 
             for element in job_json['body']['children'][1]['children'][0]['children']:
                 try:
                     if element['ecid'].__contains__("jobDescription"):
-                        self.__values_dict['Job Description'] = element['text']
+                        self.__values_dict['description'] = element['text']
                         break
                 except:
                     pass
 
-            # self.__values_dict['Job Application URL'] = job_json['openGraphAttributes']['url'] + '/apply'
-            self.__values_dict['Job Application URL'] = job_json['openGraphAttributes']['url']
+            self.__values_dict['application_url'] = job_json['openGraphAttributes']['url']
 
             for element in job_json['body']['children'][1]['children'][1]['children']:
                 try:
                     if element['iconName'] == "JOB_TYPE":
-                        self.__values_dict['Job Type'] = element['imageLabel']
+                        self.__values_dict['job_type'].append(element['imageLabel'])
                         break
                 except:
                     pass
@@ -73,7 +76,28 @@ class Scraper:
                 except:
                     pass
             if aux:
-                self.__values_dict['Job Location'] = aux
+                try:
+                    location = aux[0].split("-")
+                    location_dict = {
+                        "country": None,
+                        "state": None,
+                        "city": None
+                    }
+                    if len(location) == 1:
+                        location_dict['country'] = location[0].lstrip(' ').rstrip(' ')
+
+                    elif len(location) == 2:
+                        location_dict['country'] = location[0].lstrip(' ').rstrip(' ')
+                        location_dict['state'] = location[1].lstrip(' ').rstrip(' ')
+
+                    elif len(location) == 3:
+                        location_dict['country'] = location[0].lstrip(' ').rstrip(' ')
+                        location_dict['state'] = location[1].lstrip(' ').rstrip(' ')
+                        location_dict['city'] = location[2].lstrip(' ').rstrip(' ')
+
+                    self.__values_dict['job_locations'].append(location_dict)
+                except Exception as e:
+                    pass
 
             years_list = self.__regex_dict['Years of Experience'].findall(job_json['openGraphAttributes']['description'])
             aux = ''
@@ -83,42 +107,52 @@ class Scraper:
                 else:
                     if int(year) < aux:
                         aux = int(year)
-            self.__values_dict['Preferred Years of Experience'] = aux
+            if aux:
+                self.__values_dict['preferred_years_experience'].append(int(aux))
 
-            self.__values_dict['Preferred Certifications'] = self.__tools_obj.search_keyword(
-                keywords_dict['Certifications'], job_json['openGraphAttributes']['description'])
+            self.__values_dict['preferred_certification'] = (self.__tools_obj.search_keyword(
+                keywords_dict['Certifications'], job_json['openGraphAttributes']['description']))
 
             aux = self.__regex_dict['Salary'].findall(job_json['openGraphAttributes']['description'])
             if aux:
-                self.__values_dict['Salary'] = aux[0]
+                try:
+                    self.__values_dict['salary'] = aux[0]
+                except Exception as e:
+                    pass
 
-            self.__values_dict['Preferred Previous Job Titles'] = self.__tools_obj.search_keyword(
-                keywords_dict['Titles'], job_json['openGraphAttributes']['description'])
+            if self.__tools_obj.search_keyword(
+                keywords_dict['Titles'], job_json['openGraphAttributes']['description']):
+                self.__values_dict['preferred_previous_job_title'] = self.__tools_obj.search_keyword(
+                    keywords_dict['Titles'], job_json['openGraphAttributes']['description'])
 
-            self.__values_dict['Soft Skills'] = self.__tools_obj.search_keyword(
-                keywords_dict['Soft Skills'], job_json['openGraphAttributes']['description'])
+            if (self.__tools_obj.search_keyword(
+                keywords_dict['Soft Skills'], job_json['openGraphAttributes']['description'])):
 
-            self.__values_dict['Technical Skills'] = self.__tools_obj.search_keyword(
-                keywords_dict['Technical Skills'], job_json['openGraphAttributes']['description'])
+                self.__values_dict['preferred_soft_skill'] = (self.__tools_obj.search_keyword(
+                    keywords_dict['Soft Skills'], job_json['openGraphAttributes']['description']))
 
-            self.__values_dict['Preferred Majors'] = self.__tools_obj.search_keyword(
-                keywords_dict['Majors'], job_json['openGraphAttributes']['description'])
+            if self.__tools_obj.search_keyword(
+                keywords_dict['Technical Skills'], job_json['openGraphAttributes']['description']):
+                self.__values_dict['preferred_technical_skill'] = self.__tools_obj.search_keyword(
+                    keywords_dict['Technical Skills'], job_json['openGraphAttributes']['description'])
+
+            if self.__tools_obj.search_keyword(
+                keywords_dict['Majors'], job_json['openGraphAttributes']['description']):
+                self.__values_dict['job_preferred_major'] = self.__tools_obj.search_keyword(
+                    keywords_dict['Majors'], job_json['openGraphAttributes']['description'])
 
             aux = self.__regex_dict['GPA'].findall(job_json['openGraphAttributes']['description'])
             if aux:
-                self.__values_dict['Min GPA requirement'] = aux[0]
+                try:
+                    self.__values_dict['job_gpa'] = int(aux[0])
+                except Exception as e:
+                    pass
 
-            if self.__regex_dict['Hybrid environment'].search(job_json['openGraphAttributes']['description']):
-                self.__values_dict['Work environment'] = "Hybrid"
-            elif self.__regex_dict['Virtual environment'].search(job_json['openGraphAttributes']['description']):
-                if self.__regex_dict['Physical environment'].search(job_json['openGraphAttributes']['description']):
-                    self.__values_dict['Work environment'] = "Hybrid"
-                else:
-                    self.__values_dict['Work environment'] = "Virtual"
-            elif self.__regex_dict['Physical environment'].search(job_json['openGraphAttributes']['description']):
-                self.__values_dict['Work environment'] = "Physical"
 
-            return self.__values_dict
         except Exception as e:
+
+            self.__values_dict['description'] = 'the job is no longer available'
             self.__logger.error(f"::Scraper:: Error found; {e}")
-            raise
+
+        return self.__values_dict
+

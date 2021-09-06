@@ -1,12 +1,10 @@
 # -*- coding: UTF-8 -*-
 
-import json
 import pandas
 from concurrent.futures import ThreadPoolExecutor
 from dependencies import tools
 from config import *
 from scrapers import myworkdayjobs, taleo
-
 
 
 class Crawler:
@@ -56,7 +54,7 @@ class Crawler:
 
                     if 'myworkdayjobs' in job_url:
                         self.__result_list.append(
-                            myworkdayjobs.Scraper().scrape(json.loads(req.text), self.__keywords_dict))
+                            myworkdayjobs.Scraper().scrape(req.text, self.__keywords_dict))
 
                 else:
                     # error job url
@@ -70,6 +68,7 @@ class Crawler:
                 if 'taleo' in job_url:
 
                     driver.get(job_url)
+
                     self.__result_list.append(
                         taleo.Scraper().scrape(driver, self.__keywords_dict, job_url))
 
