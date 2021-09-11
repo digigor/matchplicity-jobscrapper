@@ -137,4 +137,6 @@ curl --location --request POST 'http://151.80.33.51:6789/get-job' \
 
 - added checking for "job" key on the taleo URL.
 
+- job_type results improved.
+
 'Francisco Battan. Informatics Engineer.'
