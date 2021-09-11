@@ -13,12 +13,15 @@ class Crawler:
         self.__tools_obj = tools.Tools()
         self.__logger = self.__tools_obj.get_logger()
         df = pandas.read_excel(INPUT_FILE, na_filter=False)
+        locations = pandas.read_csv(LOCATIONS_FILE, na_filter=False)
+        
         self.__keywords_dict = {
             'Titles': list(filter(None, df['Titles'].to_list())),
             'Soft Skills': list(filter(None, df['Soft Skills'].to_list())),
             'Technical Skills': list(filter(None, df['Technical Skills'].to_list())),
             'Certifications': list(filter(None, df['Certifications'].to_list())),
-            'Majors': list(filter(None, df['Majors'].to_list()))
+            'Majors': list(filter(None, df['Majors'].to_list())),
+            'locations': locations.to_dict('records')
         }
         self.__result_list = []
 
@@ -43,42 +46,66 @@ class Crawler:
 
     def crawl_requests(self, session, count, job_url):
         try:
+            results = {
+                'title': None,
+                'description': None,
+                'application_url': job_url,
+                'job_type': [],
+                'job_locations': [],
+                'preferred_years_experience': [],
+                'preferred_previous_job_title': None,
+                'salary': None,
+                'preferred_certification': [],
+                'preferred_soft_skill': [],
+                'preferred_technical_skill': [],
+                'job_preferred_major': [],
+                'job_gpa': None,
+                'success': None,
+                'source': 'myworkdayjobs'
+            }
             self.__logger.info(f"Job {count + 1} - \"{job_url}\": Extracting information")
 
             # Requests strategy
             # Agregar mas urls de Requests aqui
             if 'myworkdayjobs' in job_url:
+                results['source'] = 'myworkdayjobs'
                 req = session.get(job_url)
 
                 if req.status_code == 200:
 
                     if 'myworkdayjobs' in job_url:
-                        self.__result_list.append(
-                            myworkdayjobs.Scraper().scrape(req.text, self.__keywords_dict))
 
+                        results = myworkdayjobs.Scraper().scrape(req.text, self.__keywords_dict)
+                        
                 else:
+                    results['success'] = False
                     # error job url
                     self.__logger.error(f"Status Code Error: {req.status_code}; Url: {req.url}")
+                
+                #self.__result_list.append(results)
 
             # Selenium Strategy
             # Agregar mas urls de selenium aqui
             elif 'taleo' in job_url:
-                driver = self.__tools_obj.create_driver()
-
-                if 'taleo' in job_url:
-
+                results['source'] = 'taleo'
+                if 'job=' in job_url:
+                    driver = self.__tools_obj.create_driver()
                     driver.get(job_url)
 
-                    self.__result_list.append(
-                        taleo.Scraper().scrape(driver, self.__keywords_dict, job_url))
+                    results = taleo.Scraper().scrape(driver, self.__keywords_dict, job_url)
+                    driver.close()
+                else:
+                    #No job id on url
+                    results['success'] = False
 
-                driver.close()
+                #self.__result_list.append(results)
 
             else:
+                results['success'] = False
                 self.__logger.error(f"Wrong URL; Url: {job_url}")
 
             self.__logger.info(f"Job {count + 1} - \"{job_url}\": Scraping finished")
 
-
+            self.__result_list.append(results)
         except Exception as e:
             self.__logger.error(f"Job {count + 1} - {job_url}; Error found; {e}")

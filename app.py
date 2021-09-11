@@ -19,7 +19,7 @@ def get_job():
     results = crawler.Crawler().run(result_list)
 
     # return json response
-    response = {'results': results, 'success': True, 'msg': "Results obtained", 'error_code': 0}
+    response = {'results': results}
     return jsonify(response)
 
 

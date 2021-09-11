@@ -23,7 +23,8 @@ class Scraper:
             'Physical environment':
                 re.compile(r'(physical office|physical environment|office based)', re.IGNORECASE),
             'Hybrid environment':
-                re.compile(r'(hybrid environment|work at home/office|office and home|hybrid/work at home)', re.IGNORECASE)
+                re.compile(r'(hybrid environment|work at home/office|office and home|hybrid/work at home)', re.IGNORECASE),
+            'internship': ['internship', 'Internship']
         }
         self.__values_dict = {
             'title': None,
@@ -39,6 +40,8 @@ class Scraper:
             'preferred_technical_skill': [],
             'job_preferred_major': [],
             'job_gpa': None,
+            'success': None,
+            'source': 'taleo'
             #"'Work environment': '',
             #'is_nation_wid': None
         }
@@ -64,43 +67,90 @@ class Scraper:
             if not re.search(r'The job is no longer available', driver.page_source):
 
                 # Title
-                for xpath in self.__xpath_dict['title']:
-                    result = driver.find_elements_by_xpath(xpath)
-                    if result:
-                        self.__values_dict['title'] = result[0].text
-                        break
+                try:
+                    for xpath in self.__xpath_dict['title']:
+                        result = driver.find_elements_by_xpath(xpath)
+                        if result:
+                            self.__values_dict['title'] = result[0].text
+                            break
+                except Exception as e:
+                    pass
 
                 # Description
-                for xpath in self.__xpath_dict['description']:
-                    result = driver.find_elements_by_xpath(xpath)
-                    if result:
-                        # save the HTML tags
-                        self.__values_dict['description'] = (result[0]).get_attribute('innerHTML')
-                        break
-
+                try:
+                    for xpath in self.__xpath_dict['description']:
+                        result = driver.find_elements_by_xpath(xpath)
+                        if result:
+                            # save the HTML tags
+                            self.__values_dict['description'] = (result[0]).get_attribute('innerHTML')
+                            break
+                except Exception as e:
+                    pass
                 # Application URL
                 self.__values_dict['application_url'] = job_url
 
                 # job types
                 for xpath in self.__xpath_dict['job_type']:
-                    result = driver.find_elements_by_xpath(xpath)
-                    if result:
+                    
+                    try:
+                        if driver.find_elements_by_xpath(xpath):
+                            results = driver.find_elements_by_xpath(xpath)
+                            job_to_compare = self.__data_cleaning.MatcherParser(results[0].text)
 
-                        aux = self.__data_cleaning.MatcherParser(result[0].text)
 
-                        if 'experienced' in self.__data_cleaning.MatcherParser(result[0].text):
-                            self.__values_dict['job_type'].append("Full Time")
-                        else:
-                            self.__values_dict['job_type'].append(result[0].text)
-                        break
+                            if job_to_compare == 'fulltime':
 
+                                if  self.__tools_obj.search_keyword(self.__regex_dict['internship'], self.__values_dict['description']):
+                                    self.__values_dict['job_type'].append('full-time-int')
+                                else:
+                                    self.__values_dict['job_type'].append('full-time')
+
+                            elif job_to_compare == 'parttime':
+                                
+                                if  self.__tools_obj.search_keyword(self.__regex_dict['internship'], self.__values_dict['description']):
+                                    self.__values_dict['job_type'].append('part-time-int')
+                                else:
+                                    self.__values_dict['job_type'].append('part-time')
+                            
+                            elif job_to_compare == 'intern':
+                                self.__values_dict['job_type'].append('full-time-int')
+                            
+                            elif job_to_comapre =='experienced':
+                                self.__values_dict['job_type'].append('full-time')
+
+                            break  
+                    except Exception as e:
+                        pass
                 # job location
                 for xpath in self.__xpath_dict['job_location']:
-                    result = driver.find_elements_by_xpath(xpath)
-                    if result:
-                        # save the HTML tags
-                        self.__values_dict['job_locations'].append(result[0].text)
-                        break
+                    try:
+                        result = driver.find_elements_by_xpath(xpath)
+                        if result:
+                            element = (driver.find_elements_by_xpath(xpath)[0].text)                        
+                            element = element.replace("Non-Japan Asia-","").replace("Americas", "").replace("Europe, Middle East, Africa", "")
+                            location_list = element.split("-")
+                            location_dict = {
+                                "country": None,
+                                "state": None,
+                                "city": None
+                            }
+                            if len(location_list) == 1:
+                                location_dict['country'] = location_list[0].lstrip(' ').rstrip(' ')
+
+                            elif len(location_list) == 2:
+                                location_dict['country'] = location_list[-2].lstrip(' ').rstrip(' ')
+                                location_dict['state'] = location_list[-1].lstrip(' ').rstrip(' ')
+
+                            elif len(location_list)>=3:
+                                location_dict['country'] = location_list[-3].lstrip(' ').rstrip(' ')
+                                location_dict['state'] = location_list[-2].lstrip(' ').rstrip(' ')
+                                location_dict['city'] = location_list[-1].lstrip(' ').rstrip(' ')
+                         
+
+                            self.__values_dict['job_locations'].append(location_dict)
+                    except Exception as e:
+                        pass
+                      
 
                 # years of experience
                 years_list = self.__regex_dict['Years of Experience'].findall(driver.page_source)
@@ -116,7 +166,7 @@ class Scraper:
                 if self.__tools_obj.search_keyword(
                     keywords_dict['Titles'], driver.page_source):
 
-                    self.__values_dict['preferred_years_experience'] = self.__tools_obj.search_keyword(
+                    self.__values_dict['preferred_previous_job_title'] = self.__tools_obj.search_keyword(
                         keywords_dict['Titles'], driver.page_source)
 
                 # Salary
@@ -158,12 +208,17 @@ class Scraper:
                         self.__values_dict['job_gpa'] = int(result[0])
                     except Exception as e:
                         pass
+                
+                self.__values_dict['success'] = True
 
             else:
-                self.__values_dict['description'] = 'the job is no longer available'
+                self.__values_dict['success'] = False
 
-
-            return self.__values_dict
+          
         except Exception as e:
+            self.__values_dict['success'] = False
+
             self.__logger.error(f"::Scraper:: Error found; {e}")
-            raise
+
+        
+        return self.__values_dict

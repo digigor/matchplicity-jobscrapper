@@ -23,7 +23,8 @@ class Scraper:
             'Physical environment':
                 re.compile(r'(physical office|physical environment|office based)', re.IGNORECASE),
             'Hybrid environment':
-                re.compile(r'(hybrid environment|work at home/office|office and home|hybrid/work at home)', re.IGNORECASE)
+                re.compile(r'(hybrid environment|work at home/office|office and home|hybrid/work at home)', re.IGNORECASE),
+            'internship': ['internship', 'Internship']
         }
         self.__values_dict = {
             'title': None,
@@ -39,17 +40,22 @@ class Scraper:
             'preferred_technical_skill': [],
             'job_preferred_major': [],
             'job_gpa': None,
+            'success': None,
+            'source': 'myworkdayjobs'
             #"'Work environment': '',
             #'is_nation_wid': None
         }
 
     def scrape(self, req, keywords_dict):
         try:
-
+            
             job_json = json.loads(req)
+
+            #title
             if job_json['openGraphAttributes']['title']:
                 self.__values_dict['title'] = job_json['openGraphAttributes']['title']
 
+            #description
             for element in job_json['body']['children'][1]['children'][0]['children']:
                 try:
                     if element['ecid'].__contains__("jobDescription"):
@@ -57,17 +63,35 @@ class Scraper:
                         break
                 except:
                     pass
-
+            
+            #aplication url
             self.__values_dict['application_url'] = job_json['openGraphAttributes']['url']
 
+            #job_type
             for element in job_json['body']['children'][1]['children'][1]['children']:
                 try:
                     if element['iconName'] == "JOB_TYPE":
-                        self.__values_dict['job_type'].append(element['imageLabel'])
-                        break
+                        
+                        jobtype = self.__data_cleaning.MatcherParser(element['imageLabel'])
+
+                        if jobtype == 'fulltime':
+
+                            if  self.__tools_obj.search_keyword(self.__regex_dict['internship'], job_json['openGraphAttributes']['description']):
+                                self.__values_dict['job_type'].append('full-time-int')
+                            else:
+                                self.__values_dict['job_type'].append('full-time')
+
+                        elif jobtype == 'parttime':
+                            
+                            if  self.__tools_obj.search_keyword(self.__regex_dict['internship'], job_json['openGraphAttributes']['description']):
+                                self.__values_dict['job_type'].append('part-time-int')
+                            else:
+                                self.__values_dict['job_type'].append('part-time')
+                
                 except:
                     pass
-
+            
+            #location
             aux = []
             for element in job_json['body']['children'][1]['children'][0]['children']:
                 try:
@@ -76,6 +100,7 @@ class Scraper:
                 except:
                     pass
             if aux:
+
                 try:
                     location = aux[0].split("-")
                     location_dict = {
@@ -147,11 +172,12 @@ class Scraper:
                     self.__values_dict['job_gpa'] = int(aux[0])
                 except Exception as e:
                     pass
-
+            
+            self.__values_dict['success'] = True
 
         except Exception as e:
 
-            self.__values_dict['description'] = 'the job is no longer available'
+            self.__values_dict['success'] = False
             self.__logger.error(f"::Scraper:: Error found; {e}")
 
         return self.__values_dict

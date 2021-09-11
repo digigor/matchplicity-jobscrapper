@@ -125,4 +125,16 @@ curl --location --request POST 'http://151.80.33.51:6789/get-job' \
 
 - Regex expressions improved 
 
+09/11/2021 
+
+- added correct data structure for job_location on taleo source.
+
+- added key "source" to the result JSON.
+
+- added "success" key to determine if the scraping process for each job url worked well.
+
+- added more exceptions.
+
+- added checking for "job" key on the taleo URL.
+
 'Francisco Battan. Informatics Engineer.'
