@@ -112,8 +112,14 @@ class Scraper:
                         location_dict['country'] = location[0].lstrip(' ').rstrip(' ')
 
                     elif len(location) == 2:
-                        location_dict['country'] = location[0].lstrip(' ').rstrip(' ')
-                        location_dict['state'] = location[1].lstrip(' ').rstrip(' ')
+                        aux = location[1].lstrip(' ').rstrip(' ')
+                        country = location[0].lstrip(' ').rstrip(' ')
+                        dict_aux = next(item for item in keywords_dict['locations'] if item['country']==country and (item['city']== aux or item['state']==aux))
+                        location_dict['country'] = dict_aux['country']
+                        location_dict['state'] =  dict_aux['state']
+                        location_dict['city'] =  dict_aux['city']
+                                
+
 
                     elif len(location) == 3:
                         location_dict['country'] = location[0].lstrip(' ').rstrip(' ')
