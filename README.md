@@ -139,4 +139,12 @@ curl --location --request POST 'http://151.80.33.51:6789/get-job' \
 
 - job_type results improved.
 
+09/11/2021
+
+- added locations asiggn when two results are scraped. This is using the database of locations provided.
+
+09/14/2021
+
+- added more use cases when the location has keywords
+
 'Francisco Battan. Informatics Engineer.'

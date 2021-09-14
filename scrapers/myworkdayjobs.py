@@ -114,7 +114,7 @@ class Scraper:
                     elif len(location) == 2:
                         aux = location[1].lstrip(' ').rstrip(' ')
                         country = location[0].lstrip(' ').rstrip(' ')
-                        dict_aux = next(item for item in keywords_dict['locations'] if item['country']==country and (item['city']== aux or item['state']==aux))
+                        dict_aux = next(item for item in keywords_dict['locations'] if item['country'] in country and (item['city'] in aux or item['state'] in aux))
                         location_dict['country'] = dict_aux['country']
                         location_dict['state'] =  dict_aux['state']
                         location_dict['city'] =  dict_aux['city']
@@ -122,9 +122,13 @@ class Scraper:
 
 
                     elif len(location) == 3:
-                        location_dict['country'] = location[0].lstrip(' ').rstrip(' ')
-                        location_dict['state'] = location[1].lstrip(' ').rstrip(' ')
-                        location_dict['city'] = location[2].lstrip(' ').rstrip(' ')
+                        city =  location_list[-1].lstrip(' ').rstrip(' ')
+                        state = location_list[-2].lstrip(' ').rstrip(' ')
+                        country = location_list[-3].lstrip(' ').rstrip(' ')
+                        dict_aux = next(item for item in keywords_dict['locations'] if item['country'] in country and item['city'] in city and item['state'] in state)
+                        location_dict['country'] = dict_aux['country']
+                        location_dict['state'] =  dict_aux['state']
+                        location_dict['city'] =  dict_aux['city']
 
                     self.__values_dict['job_locations'].append(location_dict)
                 except Exception as e:
