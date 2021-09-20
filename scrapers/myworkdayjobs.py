@@ -2,7 +2,7 @@
 
 import re
 import json
-from dependencies import tools, data_cleaning
+from dependencies import tools, data_cleaning, usa_states
 
 
 class Scraper:
@@ -102,12 +102,21 @@ class Scraper:
             if aux:
 
                 try:
-                    location = aux[0].split("-")
+                    if "-" in aux[0]:
+                        location = aux[0].split("-")
+                    elif "," in aux[0]:
+                        location = aux[0].split(",")
                     location_dict = {
                         "country": None,
                         "state": None,
                         "city": None
                     }
+
+                    if location_dict['country'] == 'USA' or location_dict['country'] == 'usa' or location_dict['country'] == 'United States' or location_dict['country'] == 'United States of America':
+                        if len(location_dict['state']) >= 3:
+                            location_dict['state'] = usa_states.us_state_to_abbrev.values(location_dict['state'])
+
+
                     if len(location) == 1:
                         location_dict['country'] = location[0].lstrip(' ').rstrip(' ')
 
@@ -122,9 +131,9 @@ class Scraper:
 
 
                     elif len(location) == 3:
-                        city =  location_list[-1].lstrip(' ').rstrip(' ')
-                        state = location_list[-2].lstrip(' ').rstrip(' ')
-                        country = location_list[-3].lstrip(' ').rstrip(' ')
+                        city =  location[-1].lstrip(' ').rstrip(' ')
+                        state = location[-2].lstrip(' ').rstrip(' ')
+                        country = location[-3].lstrip(' ').rstrip(' ')
                         dict_aux = next(item for item in keywords_dict['locations'] if item['country'] in country and item['city'] in city and item['state'] in state)
                         location_dict['country'] = dict_aux['country']
                         location_dict['state'] =  dict_aux['state']
