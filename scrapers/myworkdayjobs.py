@@ -112,11 +112,6 @@ class Scraper:
                         "city": None
                     }
 
-                    if location_dict['country'] == 'USA' or location_dict['country'] == 'usa' or location_dict['country'] == 'United States' or location_dict['country'] == 'United States of America':
-                        if len(location_dict['state']) >= 3:
-                            location_dict['state'] = usa_states.us_state_to_abbrev.values(location_dict['state'])
-
-
                     if len(location) == 1:
                         location_dict['country'] = location[0].lstrip(' ').rstrip(' ')
 
@@ -134,10 +129,18 @@ class Scraper:
                         city =  location[-1].lstrip(' ').rstrip(' ')
                         state = location[-2].lstrip(' ').rstrip(' ')
                         country = location[-3].lstrip(' ').rstrip(' ')
-                        dict_aux = next(item for item in keywords_dict['locations'] if item['country'] in country and item['city'] in city and item['state'] in state)
-                        location_dict['country'] = dict_aux['country']
-                        location_dict['state'] =  dict_aux['state']
-                        location_dict['city'] =  dict_aux['city']
+
+                        try:
+                            dict_aux = next(item for item in keywords_dict['locations'] if item['country'] in country and item['city'] in city and item['state'] in state)
+                            location_dict['country'] = dict_aux['country']
+                            location_dict['state'] =  dict_aux['state']
+                            location_dict['city'] =  dict_aux['city']
+                        except Exception as e:
+                            location_dict['country'] = country
+                            location_dict['state'] =  state
+                            location_dict['city'] =  city
+                            
+                       
 
                     self.__values_dict['job_locations'].append(location_dict)
                 except Exception as e:
