@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import unicodedata2
+#import unicodedata2
 import unicodedata
 import re
 
@@ -25,8 +25,8 @@ class DataCleaner:
         :param input_str: string to be changed
         :return: string with the accents removed
         '''
-        nfkd_form = unicodedata2.normalize('NFKD', input_str)
-        return u"".join([c for c in nfkd_form if not unicodedata2.combining(c)])
+        nfkd_form = unicodedata.normalize('NFKD', input_str)
+        return u"".join([c for c in nfkd_form if not unicodedata.combining(c)])
 
     def MatcherParser(self, texto):
         '''

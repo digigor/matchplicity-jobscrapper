@@ -46,7 +46,23 @@ class Scraper:
             #'is_nation_wid': None
         }
 
+
+
     def scrape(self, req, keywords_dict):
+
+        """def abreviation(self, countr, stat):
+
+            if countr == "USA":
+                countr = "United States of America"
+                for sta, ab in usa_states.us_state_to_abbrev.items():
+                    if ab == stat:
+                    stat = sta
+
+            return countr, stat"""
+
+
+
+
         try:
             
             job_json = json.loads(req)
@@ -118,7 +134,30 @@ class Scraper:
                     elif len(location) == 2:
                         aux = location[1].lstrip(' ').rstrip(' ')
                         country = location[0].lstrip(' ').rstrip(' ')
-                        dict_aux = next(item for item in keywords_dict['locations'] if item['country'] in country and (item['city'] in aux or item['state'] in aux))
+                        if country == "USA":
+                           country = "United States"
+                           for sta , abrev in usa_states.us_state_to_abbrev.items():
+                                if abrev == aux:
+                                    aux = sta
+
+                        for loc in keywords_dict['locations']:
+                            if country in country in loc['country']:
+                                if aux in loc['state']:
+                                    dict_aux = {'country': country,
+                                                'state': aux,
+                                                'city': loc['city']}
+
+                                elif aux in loc['city']:
+                                    dict_aux = {'country': country,
+                                                'state': loc['state'],
+                                                'city': aux}
+                                else:
+                                    dict_aux = {'country': country,
+                                                'state': None,
+                                                'city': aux}
+
+
+
                         location_dict['country'] = dict_aux['country']
                         location_dict['state'] =  dict_aux['state']
                         location_dict['city'] =  dict_aux['city']
@@ -128,13 +167,23 @@ class Scraper:
                     elif len(location) == 3:
                         city =  location[-1].lstrip(' ').rstrip(' ')
                         state = location[-2].lstrip(' ').rstrip(' ')
+
                         country = location[-3].lstrip(' ').rstrip(' ')
+                        if country == "USA":
+                           country = "United States"
+                           for sta , abrev in usa_states.us_state_to_abbrev.items():
+                                if abrev == state:
+                                    state = sta
+
+
 
                         try:
                             dict_aux = next(item for item in keywords_dict['locations'] if item['country'] in country and item['city'] in city and item['state'] in state)
+
+
                             location_dict['country'] = dict_aux['country']
-                            location_dict['state'] =  dict_aux['state']
-                            location_dict['city'] =  dict_aux['city']
+                            location_dict['state'] =   dict_aux['state']
+                            location_dict['city'] =    dict_aux['city']
                         except Exception as e:
                             location_dict['country'] = country
                             location_dict['state'] =  state
@@ -203,4 +252,6 @@ class Scraper:
             self.__logger.error(f"::Scraper:: Error found; {e}")
 
         return self.__values_dict
+
+
 

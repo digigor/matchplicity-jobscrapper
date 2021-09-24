@@ -146,5 +146,12 @@ curl --location --request POST 'http://151.80.33.51:6789/get-job' \
 09/14/2021
 
 - added more use cases when the location has keywords
+- 
+09/23/2021
+
+- added validation for "country" , "state" and "city". if there is no match, it shows the same results that the page
 
 'Francisco Battan. Informatics Engineer.'
+
+
+

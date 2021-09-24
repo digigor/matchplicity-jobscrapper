@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 import re
-from dependencies import tools, data_cleaning
+from dependencies import tools, data_cleaning, usa_states
 
 
 class Scraper:
@@ -140,21 +140,82 @@ class Scraper:
                             elif len(location_list) == 2:
                                 aux = location_list[-1].lstrip(' ').rstrip(' ')
                                 country =location_list[-2].lstrip(' ').rstrip(' ')
-                                dict_aux = next(item for item in keywords_dict['locations'] if item['country'] in country and (item['city'] in aux or item['state'] in aux))
+                                if country == "USA":
+                                    country = "United States"
+                                    for sta, abrev in usa_states.us_state_to_abbrev.items():
+                                        if abrev == aux:
+                                            aux = sta
+
+                                for loc in keywords_dict['locations']:
+
+                                    if aux in loc['city'] and country in loc['country']:
+                                        if aux == loc['city'] and aux == loc['state']:
+                                            state_1 = loc['state']
+                                            dict_aux = {'country': country,
+                                                        'state': state_1,
+                                                        'city': aux}
+                                            break
+                                        else:
+                                            state_1 = loc['state']
+                                            dict_aux = {'country': country,
+                                                        'state': state_1,
+                                                        'city': aux}
+
+                                    elif aux in loc['state']:
+                                        # if aux in usa_states.values():
+                                        # aux = usa_states[aux]
+                                        if aux in keywords_dict['locations']:
+                                            dict_aux = {'country': country,
+                                                        'state': aux,
+                                                        'city': loc['city']}
+
+                                location_dict['country'] = dict_aux['country']
+                                location_dict['state'] = dict_aux['state']
+                                location_dict['city'] = dict_aux['city']
+
+
+
+                                """dict_aux = next(item for item in keywords_dict['locations'] if item['country'] in country and (item['city'] in aux or item['state'] in aux))
                                 location_dict['country'] = dict_aux['country']
                                 location_dict['state'] =  dict_aux['state']
                                 location_dict['city'] =  dict_aux['city']
                                 #location_dict['country'] = location_list[-2].lstrip(' ').rstrip(' ')
-                                #location_dict['state'] = location_list[-1].lstrip(' ').rstrip(' ')
+                                #location_dict['state'] = location_list[-1].lstrip(' ').rstrip(' ')"""
 
                             elif len(location_list)>=3:
                                 city =  location_list[-1].lstrip(' ').rstrip(' ')
                                 state = location_list[-2].lstrip(' ').rstrip(' ')
                                 country = location_list[-3].lstrip(' ').rstrip(' ')
-                                dict_aux = next(item for item in keywords_dict['locations'] if item['country'] in country and item['city'] in city and item['state'] in state)
-                                location_dict['country'] = dict_aux['country']
-                                location_dict['state'] =  dict_aux['state']
-                                location_dict['city'] =  dict_aux['city']
+
+                                if country == "United States of America" or country == "USA" :
+                                    country = "United States"
+                                    for sta, abrev in usa_states.us_state_to_abbrev.items():
+                                        if abrev == state:
+                                            state = sta
+                                    if city == "New York":
+                                        city = "New York City"
+
+
+
+                                for loc in keywords_dict['locations']:
+                                    if country in loc['country'] and state in loc['state'] and  city in loc['city']:
+                                        location_dict['country'] = loc['country']
+                                        location_dict['state'] = loc['state']
+                                        location_dict['city'] = loc['city']
+                                    elif country in loc['country'] and state in loc['state'] :
+                                        location_dict['country'] = country
+                                        location_dict['state'] = state
+                                        location_dict['city'] = city
+                                    elif country in loc['country'] and city in loc['city']:
+                                        location_dict['country'] = country
+                                        location_dict['state'] = loc['state']
+                                        location_dict['city'] = city
+
+
+                                   # dict_aux = next(item for item in keywords_dict['locations'] if item['country'] in country and item['city'] in city and item['state'] in state)
+
+
+
                          
 
                             self.__values_dict['job_locations'].append(location_dict)
