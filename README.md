@@ -20,11 +20,11 @@ The data fields keeping in mind are the following:
 
 ### Dependencies.
 
-* Python 3.8+
+* Python 3.8+ (apt install python3-pip)
 
-* Firefox installed
+* Firefox installed (apt install firefox)
 
-* Geckodriver on PATH
+* Geckodriver on PATH (in this case is the project's directory)
 
 ### Strategy Used
 
@@ -50,9 +50,9 @@ Tested on Python 3.8
     
 2) install requirements doing:
 
-```pip3 install -r requirements```.
+```pip install -r requirements.txt```.
 
-3) execute```python3 app.py runserver```
+3) execute```python3 app.py runserver``` from the project's directory
     
 #### Notes or Considerations
 
