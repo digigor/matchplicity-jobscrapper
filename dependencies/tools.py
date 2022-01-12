@@ -83,7 +83,7 @@ class Tools:
                     "proxyType": "manual",
                     "httpProxy": PROXYSOCKET
                 }
-            driver = webdriver.Firefox(options=options, capabilities=desired_capability)
+            driver = webdriver.Firefox(executable_path= "./geckodriver", options=options, capabilities=desired_capability)
 
             driver.maximize_window()
             return driver
