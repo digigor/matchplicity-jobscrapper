@@ -51,13 +51,19 @@ class Scraper:
             "title": ['//*[@id="requisitionDescriptionInterface.reqTitleLinkAction.row1"]'],
             "description": ['//*[@id="requisitionDescriptionInterface.ID1722.row1"]',
                             '//*[@id="requisitionDescriptionInterface.ID2011.row1"]',
-                            '//*[@id="requisitionDescriptionInterface.ID1531.row1"]'],
+                            '//*[@id="requisitionDescriptionInterface.ID1531.row1"]'
+                            '//*[@id="requisitionDescriptionInterface.ID1669.row1"]',
+                            ],
             "job_type": ['//*[@id="requisitionDescriptionInterface.ID1808.row1"]',
-                          '//*[@id="requisitionDescriptionInterface.ID1912.row1"]',
-                          '//*[@id="requisitionDescriptionInterface.ID1603.row1"]'],
+                         '//*[@id="requisitionDescriptionInterface.ID1912.row1"]',
+                         '//*[@id="requisitionDescriptionInterface.ID1603.row1"]',
+                         '//*[@id="requisitionDescriptionInterface.ID1977.row1"]'
+                         ],
             "job_location": ['//*[@id="requisitionDescriptionInterface.ID1724.row1"]',
                              '//*[@id="requisitionDescriptionInterface.ID1714.row1"]',
-                             '//*[@id="requisitionDescriptionInterface.ID1657.row1"]']
+                             '//*[@id="requisitionDescriptionInterface.ID1657.row1"]',
+                             '//*[@id="requisitionDescriptionInterface.ID1827.row1"]'
+                             ]
         }
 
 
@@ -79,7 +85,8 @@ class Scraper:
                 # Description
                 try:
                     for xpath in self.__xpath_dict['description']:
-                        result = driver.find_elements_by_xpath(xpath)
+                        # result = driver.find_elements_by_xpath(xpath)
+                        result = driver.find_elements_by_xpath('//*[@id="requisitionDescriptionInterface.ID1669.row1"]')
                         if result:
                             # save the HTML tags
                             self.__values_dict['description'] = (result[0]).get_attribute('innerHTML')
@@ -115,7 +122,7 @@ class Scraper:
                             elif job_to_compare == 'intern':
                                 self.__values_dict['job_type'].append('full-time-int')
                             
-                            elif job_to_comapre =='experienced':
+                            elif job_to_compare == 'experienced':
                                 self.__values_dict['job_type'].append('full-time')
 
                             break  
@@ -198,7 +205,7 @@ class Scraper:
 
 
                                 for loc in keywords_dict['locations']:
-                                    if country in loc['country'] and state in loc['state'] and  city in loc['city']:
+                                    if country in loc['country'] and state in loc['state'] and city in loc['city']:
                                         location_dict['country'] = loc['country']
                                         location_dict['state'] = loc['state']
                                         location_dict['city'] = loc['city']
@@ -284,6 +291,8 @@ class Scraper:
 
             else:
                 self.__values_dict['success'] = False
+                # the job is no longer avaible
+                print("The job is no longer available")
 
           
         except Exception as e:

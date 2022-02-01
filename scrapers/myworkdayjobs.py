@@ -71,180 +71,182 @@ class Scraper:
             if job_json['openGraphAttributes']['title']:
                 self.__values_dict['title'] = job_json['openGraphAttributes']['title']
 
-            #description
-            for element in job_json['body']['children'][1]['children'][0]['children']:
-                try:
-                    if element['ecid'].__contains__("jobDescription"):
-                        self.__values_dict['description'] = element['text']
-                        break
-                except:
-                    pass
-            
-            #aplication url
-            self.__values_dict['application_url'] = job_json['openGraphAttributes']['url']
+                #description
+                for element in job_json['body']['children'][1]['children'][0]['children']:
+                    try:
+                        if element['ecid'].__contains__("jobDescription"):
+                            self.__values_dict['description'] = element['text']
+                            break
+                    except:
+                        pass
 
-            #job_type
-            for element in job_json['body']['children'][1]['children'][1]['children']:
-                try:
-                    if element['iconName'] == "JOB_TYPE":
-                        
-                        jobtype = self.__data_cleaning.MatcherParser(element['imageLabel'])
+                #aplication url
+                self.__values_dict['application_url'] = job_json['openGraphAttributes']['url']
 
-                        if jobtype == 'fulltime':
+                #job_type
+                for element in job_json['body']['children'][1]['children'][1]['children']:
+                    try:
+                        if element['iconName'] == "JOB_TYPE":
 
-                            if  self.__tools_obj.search_keyword(self.__regex_dict['internship'], job_json['openGraphAttributes']['description']):
-                                self.__values_dict['job_type'].append('full-time-int')
-                            else:
-                                self.__values_dict['job_type'].append('full-time')
+                            jobtype = self.__data_cleaning.MatcherParser(element['imageLabel'])
 
-                        elif jobtype == 'parttime':
-                            
-                            if  self.__tools_obj.search_keyword(self.__regex_dict['internship'], job_json['openGraphAttributes']['description']):
-                                self.__values_dict['job_type'].append('part-time-int')
-                            else:
-                                self.__values_dict['job_type'].append('part-time')
-                
-                except:
-                    pass
-            
-            #location
-            aux = []
-            for element in job_json['body']['children'][1]['children'][0]['children']:
-                try:
-                    if element['iconName'] == "LOCATION":
-                        aux.append(element['imageLabel'])
-                except:
-                    pass
-            if aux:
+                            if jobtype == 'fulltime':
 
-                try:
-                    if "-" in aux[0]:
-                        location = aux[0].split("-")
-                    elif "," in aux[0]:
-                        location = aux[0].split(",")
-                    location_dict = {
-                        "country": None,
-                        "state": None,
-                        "city": None
-                    }
-
-                    if len(location) == 1:
-                        location_dict['country'] = location[0].lstrip(' ').rstrip(' ')
-
-                    elif len(location) == 2:
-                        aux = location[1].lstrip(' ').rstrip(' ')
-                        country = location[0].lstrip(' ').rstrip(' ')
-                        if country == "USA":
-                           country = "United States"
-                           for sta , abrev in usa_states.us_state_to_abbrev.items():
-                                if abrev == aux:
-                                    aux = sta
-
-                        for loc in keywords_dict['locations']:
-                            if country in country in loc['country']:
-                                if aux in loc['state']:
-                                    dict_aux = {'country': country,
-                                                'state': aux,
-                                                'city': loc['city']}
-
-                                elif aux in loc['city']:
-                                    dict_aux = {'country': country,
-                                                'state': loc['state'],
-                                                'city': aux}
+                                if  self.__tools_obj.search_keyword(self.__regex_dict['internship'], job_json['openGraphAttributes']['description']):
+                                    self.__values_dict['job_type'].append('full-time-int')
                                 else:
-                                    dict_aux = {'country': country,
-                                                'state': None,
-                                                'city': aux}
+                                    self.__values_dict['job_type'].append('full-time')
 
+                            elif jobtype == 'parttime':
 
+                                if  self.__tools_obj.search_keyword(self.__regex_dict['internship'], job_json['openGraphAttributes']['description']):
+                                    self.__values_dict['job_type'].append('part-time-int')
+                                else:
+                                    self.__values_dict['job_type'].append('part-time')
 
-                        location_dict['country'] = dict_aux['country']
-                        location_dict['state'] =  dict_aux['state']
-                        location_dict['city'] =  dict_aux['city']
-                                
+                    except:
+                        pass
 
+                #location
+                aux = []
+                for element in job_json['body']['children'][1]['children'][0]['children']:
+                    try:
+                        if element['iconName'] == "LOCATION":
+                            aux.append(element['imageLabel'])
+                    except:
+                        pass
+                if aux:
 
-                    elif len(location) == 3:
-                        city =  location[-1].lstrip(' ').rstrip(' ')
-                        state = location[-2].lstrip(' ').rstrip(' ')
+                    try:
+                        if "-" in aux[0]:
+                            location = aux[0].split("-")
+                        elif "," in aux[0]:
+                            location = aux[0].split(",")
+                        location_dict = {
+                            "country": None,
+                            "state": None,
+                            "city": None
+                        }
 
-                        country = location[-3].lstrip(' ').rstrip(' ')
-                        if country == "USA":
-                           country = "United States"
-                           for sta , abrev in usa_states.us_state_to_abbrev.items():
-                                if abrev == state:
-                                    state = sta
+                        if len(location) == 1:
+                            location_dict['country'] = location[0].lstrip(' ').rstrip(' ')
 
+                        elif len(location) == 2:
+                            aux = location[1].lstrip(' ').rstrip(' ')
+                            country = location[0].lstrip(' ').rstrip(' ')
+                            if country == "USA":
+                               country = "United States"
+                               for sta , abrev in usa_states.us_state_to_abbrev.items():
+                                    if abrev == aux:
+                                        aux = sta
 
+                            for loc in keywords_dict['locations']:
+                                if country in country in loc['country']:
+                                    if aux in loc['state']:
+                                        dict_aux = {'country': country,
+                                                    'state': aux,
+                                                    'city': loc['city']}
 
-                        try:
-                            dict_aux = next(item for item in keywords_dict['locations'] if item['country'] in country and item['city'] in city and item['state'] in state)
+                                    elif aux in loc['city']:
+                                        dict_aux = {'country': country,
+                                                    'state': loc['state'],
+                                                    'city': aux}
+                                    else:
+                                        dict_aux = {'country': country,
+                                                    'state': None,
+                                                    'city': aux}
+
 
 
                             location_dict['country'] = dict_aux['country']
-                            location_dict['state'] =   dict_aux['state']
-                            location_dict['city'] =    dict_aux['city']
-                        except Exception as e:
-                            location_dict['country'] = country
-                            location_dict['state'] =  state
-                            location_dict['city'] =  city
-                            
-                       
+                            location_dict['state'] =  dict_aux['state']
+                            location_dict['city'] =  dict_aux['city']
 
-                    self.__values_dict['job_locations'].append(location_dict)
-                except Exception as e:
-                    pass
 
-            years_list = self.__regex_dict['Years of Experience'].findall(job_json['openGraphAttributes']['description'])
-            aux = ''
-            for year in years_list:
-                if not aux:
-                    aux = int(year)
-                else:
-                    if int(year) < aux:
+
+                        elif len(location) == 3:
+                            city =  location[-1].lstrip(' ').rstrip(' ')
+                            state = location[-2].lstrip(' ').rstrip(' ')
+
+                            country = location[-3].lstrip(' ').rstrip(' ')
+                            if country == "USA":
+                               country = "United States"
+                               for sta , abrev in usa_states.us_state_to_abbrev.items():
+                                    if abrev == state:
+                                        state = sta
+
+
+
+                            try:
+                                dict_aux = next(item for item in keywords_dict['locations'] if item['country'] in country and item['city'] in city and item['state'] in state)
+
+
+                                location_dict['country'] = dict_aux['country']
+                                location_dict['state'] =   dict_aux['state']
+                                location_dict['city'] =    dict_aux['city']
+                            except Exception as e:
+                                location_dict['country'] = country
+                                location_dict['state'] =  state
+                                location_dict['city'] =  city
+
+
+
+                        self.__values_dict['job_locations'].append(location_dict)
+                    except Exception as e:
+                        pass
+
+                years_list = self.__regex_dict['Years of Experience'].findall(job_json['openGraphAttributes']['description'])
+                aux = ''
+                for year in years_list:
+                    if not aux:
                         aux = int(year)
-            if aux:
-                self.__values_dict['preferred_years_experience'].append(int(aux))
+                    else:
+                        if int(year) < aux:
+                            aux = int(year)
+                if aux:
+                    self.__values_dict['preferred_years_experience'].append(int(aux))
 
-            self.__values_dict['preferred_certification'] = (self.__tools_obj.search_keyword(
-                keywords_dict['Certifications'], job_json['openGraphAttributes']['description']))
+                self.__values_dict['preferred_certification'] = (self.__tools_obj.search_keyword(
+                    keywords_dict['Certifications'], job_json['openGraphAttributes']['description']))
 
-            aux = self.__regex_dict['Salary'].findall(job_json['openGraphAttributes']['description'])
-            if aux:
-                try:
-                    self.__values_dict['salary'] = aux[0]
-                except Exception as e:
-                    pass
+                aux = self.__regex_dict['Salary'].findall(job_json['openGraphAttributes']['description'])
+                if aux:
+                    try:
+                        self.__values_dict['salary'] = aux[0]
+                    except Exception as e:
+                        pass
 
-            if self.__tools_obj.search_keyword(
-                keywords_dict['Titles'], job_json['openGraphAttributes']['description']):
-                self.__values_dict['preferred_previous_job_title'] = self.__tools_obj.search_keyword(
-                    keywords_dict['Titles'], job_json['openGraphAttributes']['description'])
+                if self.__tools_obj.search_keyword(
+                    keywords_dict['Titles'], job_json['openGraphAttributes']['description']):
+                    self.__values_dict['preferred_previous_job_title'] = self.__tools_obj.search_keyword(
+                        keywords_dict['Titles'], job_json['openGraphAttributes']['description'])
 
-            if (self.__tools_obj.search_keyword(
-                keywords_dict['Soft Skills'], job_json['openGraphAttributes']['description'])):
+                if (self.__tools_obj.search_keyword(
+                    keywords_dict['Soft Skills'], job_json['openGraphAttributes']['description'])):
 
-                self.__values_dict['preferred_soft_skill'] = (self.__tools_obj.search_keyword(
-                    keywords_dict['Soft Skills'], job_json['openGraphAttributes']['description']))
+                    self.__values_dict['preferred_soft_skill'] = (self.__tools_obj.search_keyword(
+                        keywords_dict['Soft Skills'], job_json['openGraphAttributes']['description']))
 
-            if self.__tools_obj.search_keyword(
-                keywords_dict['Technical Skills'], job_json['openGraphAttributes']['description']):
-                self.__values_dict['preferred_technical_skill'] = self.__tools_obj.search_keyword(
-                    keywords_dict['Technical Skills'], job_json['openGraphAttributes']['description'])
+                if self.__tools_obj.search_keyword(
+                    keywords_dict['Technical Skills'], job_json['openGraphAttributes']['description']):
+                    self.__values_dict['preferred_technical_skill'] = self.__tools_obj.search_keyword(
+                        keywords_dict['Technical Skills'], job_json['openGraphAttributes']['description'])
 
-            if self.__tools_obj.search_keyword(
-                keywords_dict['Majors'], job_json['openGraphAttributes']['description']):
-                self.__values_dict['job_preferred_major'] = self.__tools_obj.search_keyword(
-                    keywords_dict['Majors'], job_json['openGraphAttributes']['description'])
+                if self.__tools_obj.search_keyword(
+                    keywords_dict['Majors'], job_json['openGraphAttributes']['description']):
+                    self.__values_dict['job_preferred_major'] = self.__tools_obj.search_keyword(
+                        keywords_dict['Majors'], job_json['openGraphAttributes']['description'])
 
-            aux = self.__regex_dict['GPA'].findall(job_json['openGraphAttributes']['description'])
-            if aux:
-                try:
-                    self.__values_dict['job_gpa'] = int(aux[0])
-                except Exception as e:
-                    pass
-            
-            self.__values_dict['success'] = True
+                aux = self.__regex_dict['GPA'].findall(job_json['openGraphAttributes']['description'])
+                if aux:
+                    try:
+                        self.__values_dict['job_gpa'] = int(aux[0])
+                    except Exception as e:
+                        pass
+
+                self.__values_dict['success'] = True
+            else:
+                self.__values_dict['success'] = 'False, The job is no longer available.'
 
         except Exception as e:
 

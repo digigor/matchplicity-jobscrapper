@@ -2,7 +2,7 @@
 import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-import crawler
+import crawler_tk
 from config import *
 
 app = Flask(__name__)
@@ -11,16 +11,18 @@ CORS(app)
 
 @app.route('/get-job', methods=['POST'])
 def get_job():
-    # receive parameters
-    result_list = request.json
+    try:
+        # receive parameters
+        result_list = request.json
 
+        # call crawler
+        results = crawler_tk.Crawler().run(result_list)
 
-    # call crawler
-    results = crawler.Crawler().run(result_list)
-
-    # return json response
-    response = {'results': results}
-    return jsonify(response)
+        response = {'success': True, 'data': results}
+        return jsonify(response)
+    except Exception as e:
+        response = {'success': False, 'msg': str(e), 'error_code': 1}
+        return jsonify(response)
 
 
 if __name__ == '__main__':

@@ -78,7 +78,8 @@ class Crawler:
                         results = myworkdayjobs.Scraper().scrape(req.text, self.__keywords_dict)
                         
                 else:
-                    results['success'] = False
+                    # results['success'] = False
+                    results['success'] = f"False, Status Code Error: {req.status_code}"
                     # error job url
                     self.__logger.error(f"Status Code Error: {req.status_code}; Url: {req.url}")
                 
@@ -95,8 +96,9 @@ class Crawler:
                     results = taleo.Scraper().scrape(driver, self.__keywords_dict, job_url)
                     driver.close()
                 else:
-                    #No job id on url
-                    results['success'] = False
+                    # No job id on url
+                    # results['success'] = False
+                    results['success'] = 'False, The job is no longer available.'
 
                 #self.__result_list.append(results)
 
