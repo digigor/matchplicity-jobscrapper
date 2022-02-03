@@ -20,11 +20,11 @@ The data fields keeping in mind are the following:
 
 ### Dependencies.
 
-* Python 3.8+
+* Python 3.8+ (apt install python3-pip)
 
-* Firefox installed
+* Firefox installed (apt install firefox)
 
-* Geckodriver on PATH
+* Geckodriver on PATH (in this case is the project's directory)
 
 ### Strategy Used
 
@@ -50,9 +50,9 @@ Tested on Python 3.8
     
 2) install requirements doing:
 
-```pip3 install -r requirements```.
+```pip install -r requirements.txt```.
 
-3) execute```python3 app.py runserver```
+3) execute```python3 app.py runserver``` from the project's directory
     
 #### Notes or Considerations
 
@@ -100,16 +100,16 @@ curl --location --request POST 'http://151.80.33.51:6789/get-job' \
 --header 'Content-Type: application/json' \
 --data-raw '[
 {
-    "url": "https://ms.taleo.net/careersection/2/jobdetail.ftl?job=3163603"
+    "url": "https://workday.wd5.myworkdayjobs.com/en-US/Workday/job/Netherlands-Amsterdam/JR-55589-Senior-Support-Model-and-Governance-Consultant--EMEA---Open-_JR-60428"
 },
 {
-    "url": "https://pfizer.wd1.myworkdayjobs.com/en-US/PfizerCareers/job/Costa-Rica---Escazu/Sr-Associate--Solution-and-Service-Management_4823561"
+    "url": "https://workday.wd5.myworkdayjobs.com/en-US/Workday/job/USA-MN-Minneapolis/Healthcare-Customer-Base-Account-Executive---Large-Enterprise_JR-61767"
 },
 {
-    "url": "https://ms.taleo.net/careersection/2/jobdetail.ftl?job=3183894"
+    "url": "https://ms.taleo.net/careersection/2/jobdetail.ftl?job=3192405"
 },
 {
-    "url": "https://pfizer.wd1.myworkdayjobs.com/en-US/PfizerCareers/job/Belgium---Puurs/Technisch-Operator-Vaccin---3-ploegen_4782834"
+    "url": "https://ms.taleo.net/careersection/2/jobdetail.ftl?job=3188186"
 }
 ]'
 ```
@@ -146,12 +146,18 @@ curl --location --request POST 'http://151.80.33.51:6789/get-job' \
 09/14/2021
 
 - added more use cases when the location has keywords
-- 
+
 09/23/2021
 
 - added validation for "country" , "state" and "city". if there is no match, it shows the same results that the page
 
+02/03/2022
+
+- add Check if the job is no longer available in taleo and myworkdayjobs.
+- add message error for taleo and myworkdayjobs.
+- update xpath for description, job_type, job_location in taleo.
+- update validation for country for taleo and myworkdayjobs. 
+- add status code in api.
+
+
 'Francisco Battan. Informatics Engineer.'
-
-
-

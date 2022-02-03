@@ -1,10 +1,12 @@
 # -*- coding: UTF-8 -*-
+import re
 
 import pandas
 from concurrent.futures import ThreadPoolExecutor
 from dependencies import tools
 from config import *
 from scrapers import myworkdayjobs, taleo
+import json
 
 
 class Crawler:
@@ -61,6 +63,7 @@ class Crawler:
                 'job_preferred_major': [],
                 'job_gpa': None,
                 'success': None,
+                'error_message': None,
                 'source': 'myworkdayjobs'
             }
             self.__logger.info(f"Job {count + 1} - \"{job_url}\": Extracting information")
@@ -74,12 +77,20 @@ class Crawler:
                 if req.status_code == 200:
 
                     if 'myworkdayjobs' in job_url:
+                        try:
+                            job_json = json.loads(req.text)
+                            if job_json['openGraphAttributes']['title']:
+                                results = myworkdayjobs.Scraper().scrape(req.text, self.__keywords_dict)
+                            else:
+                                results['success'] = False
+                                results['error_message'] = f'Error: The job is no longer available.'
 
-                        results = myworkdayjobs.Scraper().scrape(req.text, self.__keywords_dict)
-                        
+                        except Exception as e:
+                            pass
                 else:
-                    # results['success'] = False
-                    results['success'] = f"False, Status Code Error: {req.status_code}"
+                    results['success'] = False
+                    results['error_message'] = f'Error: The job is no longer available.'
+
                     # error job url
                     self.__logger.error(f"Status Code Error: {req.status_code}; Url: {req.url}")
                 
@@ -97,8 +108,8 @@ class Crawler:
                     driver.close()
                 else:
                     # No job id on url
-                    # results['success'] = False
-                    results['success'] = 'False, The job is no longer available.'
+                    results['success'] = False
+                    results['error_message'] = f'Error: The job is no longer available.'
 
                 #self.__result_list.append(results)
 

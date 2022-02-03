@@ -46,7 +46,6 @@ class Scraper:
             #'is_nation_wid': None
         }
 
-
         self.__xpath_dict = {
             "title": ['//*[@id="requisitionDescriptionInterface.reqTitleLinkAction.row1"]'],
             "description": ['//*[@id="requisitionDescriptionInterface.ID1722.row1"]',
@@ -65,8 +64,6 @@ class Scraper:
                              '//*[@id="requisitionDescriptionInterface.ID1827.row1"]'
                              ]
         }
-
-
 
     def scrape(self, driver, keywords_dict, job_url):
         try:
@@ -104,10 +101,9 @@ class Scraper:
                             results = driver.find_elements_by_xpath(xpath)
                             job_to_compare = self.__data_cleaning.MatcherParser(results[0].text)
 
-
                             if job_to_compare == 'fulltime':
 
-                                if  self.__tools_obj.search_keyword(self.__regex_dict['internship'], self.__values_dict['description']):
+                                if self.__tools_obj.search_keyword(self.__regex_dict['internship'], self.__values_dict['description']):
                                     self.__values_dict['job_type'].append('full-time-int')
                                 else:
                                     self.__values_dict['job_type'].append('full-time')
@@ -133,9 +129,13 @@ class Scraper:
                     try:
                         result = driver.find_elements_by_xpath(xpath)
                         if result:
-                            element = (driver.find_elements_by_xpath(xpath)[0].text)                        
+                            element = driver.find_elements_by_xpath(xpath)[0].text
                             element = element.replace("Non-Japan Asia-","").replace("Americas", "").replace("Europe, Middle East, Africa", "")
-                            location_list = element.split("-")
+                            location_list_aux = element.split(",")
+                            if len(location_list_aux) == 2:
+                                location_list = location_list_aux[1].split("-")
+                            else:
+                                location_list = element.split("-")
                             location_dict = {
                                 "country": None,
                                 "state": None,
@@ -146,12 +146,15 @@ class Scraper:
 
                             elif len(location_list) == 2:
                                 aux = location_list[-1].lstrip(' ').rstrip(' ')
-                                country =location_list[-2].lstrip(' ').rstrip(' ')
+                                country = location_list[-2].lstrip(' ').rstrip(' ')
                                 if country == "USA":
                                     country = "United States"
                                     for sta, abrev in usa_states.us_state_to_abbrev.items():
                                         if abrev == aux:
                                             aux = sta
+                                dict_aux = {'country': None,
+                                            'state': None,
+                                            'city': None}
 
                                 for loc in keywords_dict['locations']:
 
@@ -175,12 +178,21 @@ class Scraper:
                                             dict_aux = {'country': country,
                                                         'state': aux,
                                                         'city': loc['city']}
+                                    elif aux in loc['country']:
+                                        dict_aux = {'country': aux,
+                                                    'state': None,
+                                                    'city': None}
+                                        break
+                                    else:
+                                        if country in loc['country']:
+                                            dict_aux = {'country': country,
+                                                        'state': None,
+                                                        'city': None}
+                                            break
 
                                 location_dict['country'] = dict_aux['country']
                                 location_dict['state'] = dict_aux['state']
                                 location_dict['city'] = dict_aux['city']
-
-
 
                                 """dict_aux = next(item for item in keywords_dict['locations'] if item['country'] in country and (item['city'] in aux or item['state'] in aux))
                                 location_dict['country'] = dict_aux['country']
@@ -190,7 +202,7 @@ class Scraper:
                                 #location_dict['state'] = location_list[-1].lstrip(' ').rstrip(' ')"""
 
                             elif len(location_list)>=3:
-                                city =  location_list[-1].lstrip(' ').rstrip(' ')
+                                city = location_list[-1].lstrip(' ').rstrip(' ')
                                 state = location_list[-2].lstrip(' ').rstrip(' ')
                                 country = location_list[-3].lstrip(' ').rstrip(' ')
 
@@ -201,8 +213,6 @@ class Scraper:
                                             state = sta
                                     if city == "New York":
                                         city = "New York City"
-
-
 
                                 for loc in keywords_dict['locations']:
                                     if country in loc['country'] and state in loc['state'] and city in loc['city']:
@@ -221,14 +231,9 @@ class Scraper:
 
                                    # dict_aux = next(item for item in keywords_dict['locations'] if item['country'] in country and item['city'] in city and item['state'] in state)
 
-
-
-                         
-
                             self.__values_dict['job_locations'].append(location_dict)
                     except Exception as e:
                         pass
-                      
 
                 # years of experience
                 years_list = self.__regex_dict['Years of Experience'].findall(driver.page_source)
@@ -241,9 +246,7 @@ class Scraper:
                     self.__values_dict['preferred_years_experience'] = years_list
 
                 # Previous job titles
-                if self.__tools_obj.search_keyword(
-                    keywords_dict['Titles'], driver.page_source):
-
+                if self.__tools_obj.search_keyword(keywords_dict['Titles'], driver.page_source):
                     self.__values_dict['preferred_previous_job_title'] = self.__tools_obj.search_keyword(
                         keywords_dict['Titles'], driver.page_source)
 
@@ -256,26 +259,22 @@ class Scraper:
                         pass
 
                 # Preferred Certifications
-                if self.__tools_obj.search_keyword(
-                    keywords_dict['Certifications'], driver.page_source):
+                if self.__tools_obj.search_keyword(keywords_dict['Certifications'], driver.page_source):
                     self.__values_dict['preferred_certification'] = self.__tools_obj.search_keyword(
                         keywords_dict['Certifications'], driver.page_source)
 
                 # Soft Skills
-                if self.__tools_obj.search_keyword(
-                    keywords_dict['Soft Skills'], driver.page_source):
+                if self.__tools_obj.search_keyword(keywords_dict['Soft Skills'], driver.page_source):
                     self.__values_dict['preferred_soft_skill'] = self.__tools_obj.search_keyword(
                         keywords_dict['Soft Skills'], driver.page_source)
 
                 # Technical Skills
-                if self.__tools_obj.search_keyword(
-                    keywords_dict['Technical Skills'], driver.page_source):
+                if self.__tools_obj.search_keyword(keywords_dict['Technical Skills'], driver.page_source):
                     self.__values_dict['preferred_technical_skill'] = self.__tools_obj.search_keyword(
                         keywords_dict['Technical Skills'], driver.page_source)
 
                 # Preferred Majors
-                if self.__tools_obj.search_keyword(
-                    keywords_dict['Majors'], driver.page_source):
+                if self.__tools_obj.search_keyword(keywords_dict['Majors'], driver.page_source):
                     self.__values_dict['job_preferred_major'] = self.__tools_obj.search_keyword(
                         keywords_dict['Majors'], driver.page_source)
 
@@ -299,6 +298,6 @@ class Scraper:
             self.__values_dict['success'] = False
 
             self.__logger.error(f"::Scraper:: Error found; {e}")
-
         
         return self.__values_dict
+

@@ -4,6 +4,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import crawler_tk
 from config import *
+import json
 
 app = Flask(__name__)
 CORS(app)
@@ -17,12 +18,19 @@ def get_job():
 
         # call crawler
         results = crawler_tk.Crawler().run(result_list)
+        response = app.response_class(
+            response=json.dumps(results),
+            status=200,
+            mimetype='application/json'
+        )
 
-        response = {'success': True, 'data': results}
-        return jsonify(response)
     except Exception as e:
-        response = {'success': False, 'msg': str(e), 'error_code': 1}
-        return jsonify(response)
+        response = app.response_class(
+            response=json.dumps({'error': str(e)}),
+            status=400,
+            mimetype='application/json'
+        )
+    return response
 
 
 if __name__ == '__main__':
