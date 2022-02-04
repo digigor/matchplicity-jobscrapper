@@ -2,7 +2,7 @@
 import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-import crawler_tk
+import crawler
 from config import *
 import json
 
@@ -17,7 +17,7 @@ def get_job():
         result_list = request.json
 
         # call crawler
-        results = crawler_tk.Crawler().run(result_list)
+        results = crawler.Crawler().run(result_list)
         response = app.response_class(
             response=json.dumps(results),
             status=200,

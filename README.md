@@ -153,11 +153,13 @@ curl --location --request POST 'http://151.80.33.51:6789/get-job' \
 
 02/03/2022
 
-- add Check if the job is no longer available in taleo and myworkdayjobs.
-- add message error for taleo and myworkdayjobs.
-- update xpath for description, job_type, job_location in taleo.
-- update validation for country for taleo and myworkdayjobs. 
-- add status code in api.
+- added Check if the job is no longer available in taleo and myworkdayjobs.
+- added message error for taleo and myworkdayjobs.
+- updated xpath for description, job_type, job_location in taleo.
+- updated validation for country for taleo and myworkdayjobs. 
+- status code updated
+- added another source check 
+- added taleo job id missing
 
 
 'Francisco Battan. Informatics Engineer.'

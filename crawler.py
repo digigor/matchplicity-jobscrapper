@@ -64,7 +64,7 @@ class Crawler:
                 'job_gpa': None,
                 'success': None,
                 'error_message': None,
-                'source': 'myworkdayjobs'
+                'source': None
             }
             self.__logger.info(f"Job {count + 1} - \"{job_url}\": Extracting information")
 
@@ -109,13 +109,14 @@ class Crawler:
                 else:
                     # No job id on url
                     results['success'] = False
-                    results['error_message'] = f'Error: The job is no longer available.'
+                    results['error_message'] = 'Job Id missing or wrong.'
 
                 #self.__result_list.append(results)
 
             else:
                 results['success'] = False
-                self.__logger.error(f"Wrong URL; Url: {job_url}")
+                results['error_message'] = 'wrong web source'
+                self.__logger.error(f"Wrong URL; Url: {job_url} ")
 
             self.__logger.info(f"Job {count + 1} - \"{job_url}\": Scraping finished")
 
