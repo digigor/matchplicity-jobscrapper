@@ -40,6 +40,7 @@ class Scraper:
             'preferred_technical_skill': [],
             'job_preferred_major': [],
             'job_gpa': None,
+            'error_message': None,
             'success': None,
             'source': 'taleo'
             #"'Work environment': '',
@@ -289,11 +290,10 @@ class Scraper:
                 self.__values_dict['success'] = True
 
             else:
-                self.__values_dict['success'] = False
                 # the job is no longer avaible
-                print("The job is no longer available")
-
-          
+                self.__values_dict['success'] = False
+                self.__values_dict['error_message'] = "The job is no longer available"               
+                
         except Exception as e:
             self.__values_dict['success'] = False
 
