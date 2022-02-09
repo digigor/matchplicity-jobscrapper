@@ -86,7 +86,9 @@ class Crawler:
                                 results['error_message'] = f'Error: The job is no longer available.'
 
                         except Exception as e:
-                            pass
+                            results['success'] = False
+                            results['error_message'] = f'Error: Generic error with taleo crawler; Error: {e}'
+                            
                 else:
                     results['success'] = False
                     results['error_message'] = f'Error: The job is no longer available.'

@@ -41,11 +41,11 @@ class Scraper:
             'job_preferred_major': [],
             'job_gpa': None,
             'success': None,
+            'error_message': None,
             'source': 'myworkdayjobs'
             #"'Work environment': '',
             #'is_nation_wid': None
         }
-
 
 
     def scrape(self, req, keywords_dict):

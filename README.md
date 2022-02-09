@@ -65,34 +65,44 @@ So,if you have MAX_WORKERS = 10 and you execute 10 taleo urls the crawler will c
 https://ms.taleo.net/careersection/2/jobdetail.ftl?job=3183894
 ```
 
-- if the job is no longer available the API will respond a msg on the "description" key called "the job is no longer available".
-for instance:
-  
+Otherwise the value of results['error_message'] will be "Job Id missing or wrong."
+ 
+- This is the JSON structure from the API response
 ```
   {
   "error_code": 0, 
   "msg": "Results obtained", 
   "results": [
     {
-      "application_url": null, 
-      "description": "the job is no longer available", 
-      "job_gpa": null, 
-      "job_locations": [], 
-      "job_preferred_major": [], 
-      "job_type": [], 
-      "preferred_certification": [], 
-      "preferred_previous_job_title": null, 
-      "preferred_soft_skill": [], 
-      "preferred_technical_skill": [], 
-      "preferred_years_experience": [], 
-      "salary": null, 
-      "title": null
+      'title': None,
+      'description': None,
+      'application_url': job_url,
+      'job_type': [],
+      'job_locations': [],
+      'preferred_years_experience': [],
+      'preferred_previous_job_title': None,
+      'salary': None,
+      'preferred_certification': [],
+      'preferred_soft_skill': [],
+      'preferred_technical_skill': [],
+      'job_preferred_major': [],
+      'job_gpa': None,
+      'success': None,
+      'error_message': None,
+      'source': None
     }
-  ], 
-  "success": true
+  ]
 }
 ```
-- If the url is a 404 error or not a 200 http status code, the API will respond: "Error_code": 404.
+- If the API response is wrong you will the following results:
+```
+{
+    "error_code": 400,
+    "msg": "Error found on app.py::get_job method: Failed to decode JSON object: Expecting value: line 6 column 1 (char 178); Check the body content for the POST requests",
+    "results": null
+}
+```
+- If there an error with some url or something related to the spefic url you will receive the proper messages on results['error_message]
 
 #### Example of usage:
 ```
@@ -160,6 +170,11 @@ curl --location --request POST 'http://151.80.33.51:6789/get-job' \
 - status code updated
 - added another source check 
 - added taleo job id missing
+
+02/09/2022 
+
+- added error_code and msg on JSON response structure.
+- added more controls and error messages from the crawler.
 
 
 'Francisco Battan. Informatics Engineer.'
