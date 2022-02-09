@@ -7,7 +7,8 @@ import requests
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 from config import *
-
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
 
 class Tools:
     """
@@ -67,6 +68,29 @@ class Tools:
             raise e
 
     @staticmethod
+    def create_driver():
+        """
+            Init driver with firefox
+        :return: driver
+        """
+        try:
+            options = Options()
+            options.headless = PARAMETERS['headless']
+
+            desired_capability = webdriver.DesiredCapabilities.FIREFOX
+            if PROXYSOCKET:
+                desired_capability['proxy'] = {
+                    "proxyType": "manual",
+                    "httpProxy": PROXYSOCKET
+                }
+            driver = webdriver.Firefox(options=options, capabilities=desired_capability)
+
+            driver.maximize_window()
+            return driver
+        except Exception as e:
+            raise e
+
+    @staticmethod
     def search_keyword(keyword_list, string_text):
         """
              Search a keyword in a string
@@ -86,3 +110,4 @@ class Tools:
                 return None
         except Exception as e:
             raise e
+

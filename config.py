@@ -1,16 +1,8 @@
 # -*- coding: UTF-8 -*-
 
-URLS = ['https://aig.wd1.myworkdayjobs.com/aig',
-        'https://cliftonlarsonallen.wd1.myworkdayjobs.com/en-US/CLA',
-        'https://humana.wd5.myworkdayjobs.com/en-US/Humana_External_Career_Site',
-        'https://careers.humana.com',
-        'https://pfizer.wd1.myworkdayjobs.com/en-US/PfizerCareers',
-        'https://roberthalf.wd1.myworkdayjobs.com/en-US/ProtivitiExperiencedCareers',
-        'https://protiviti.recsolu.com/job_boards/S29cfuRzXlvTQNWy1ttINA',
-        'https://boeing.wd1.myworkdayjobs.com/NABA',
-        'https://walmart.wd5.myworkdayjobs.com/en-US/WalmartExternal']
+PROXYSOCKET = ''
 
-PROXYSOCKET = '104.194.139.168:3199'
+MAX_WORKERS = 10
 
 RETRY_TIMES = 5
 
@@ -20,8 +12,13 @@ HEADERS = {
 }
 
 INPUT_FILE = 'dependencies/input.xlsx'
+LOCATIONS_FILE = 'dependencies/city_state_country_202109101841.csv'
 
 API_DEBUG = True
 API_PORT = 6789
 
 POST_TIME = 60
+PARAMETERS = {
+    'headless': True,
+
+}

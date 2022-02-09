@@ -4,26 +4,48 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import crawler
 from config import *
+import json
 
 app = Flask(__name__)
 CORS(app)
 
 
-@app.route('/get-job', methods=['GET'])
+@app.route('/get-job', methods=['POST'])
 def get_job():
-    # receive parameters
-    params = request.args
-    job_urls = []
-    # save values in a list
-    for key, value in params.items():
-        job_urls.append(value)
+    try:
+        results_dict = {
+            "error_code": None,
+            "msg": None,
+            "results": None
+        }
 
-    # call crawler
-    results = crawler.Crawler().run(job_urls)
+        # receive parameters
+        result_list = request.json
 
-    # return json response
-    response = {'results': results, 'success': True, 'msg': "Results obtained", 'error_code': 0}
-    return jsonify(response)
+        # call crawler
+        results_list = crawler.Crawler().run(result_list)
+        
+        results_dict['error_code'] = 0
+        results_dict['msg'] = "Results obtained"
+        results_dict['results'] = results_list
+
+        response = app.response_class(
+            response=json.dumps(results_dict),
+            status=200,
+            mimetype='application/json'
+        )
+
+    except Exception as e:
+        results_dict['error_code'] = e.code
+        results_dict['msg'] = f"Error found on app.py::get_job method: {e.description}; Check the body content for the POST requests"
+        results_dict['results'] = None
+
+        response = app.response_class(
+            response=json.dumps(results_dict),
+            status=e.code,
+            mimetype='application/json'
+        )
+    return response
 
 
 if __name__ == '__main__':
