@@ -12,9 +12,10 @@ HEADERS = {
 }
 
 INPUT_FILE = 'dependencies/input.xlsx'
+LOCATIONS_FILE = 'dependencies/city_state_country_202109101841.csv'
 
 API_DEBUG = True
-API_PORT = 5678
+API_PORT = 6789
 
 POST_TIME = 60
 PARAMETERS = {

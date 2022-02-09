@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 import re
-from dependencies import tools, data_cleaning
+from dependencies import tools, data_cleaning, usa_states
 
 
 class Scraper:
@@ -23,138 +23,281 @@ class Scraper:
             'Physical environment':
                 re.compile(r'(physical office|physical environment|office based)', re.IGNORECASE),
             'Hybrid environment':
-                re.compile(r'(hybrid environment|work at home/office|office and home|hybrid/work at home)', re.IGNORECASE)
+                re.compile(r'(hybrid environment|work at home/office|office and home|hybrid/work at home)', re.IGNORECASE),
+            'internship': ['internship', 'Internship']
         }
         self.__values_dict = {
-            'Job Title': '',
-            'Job Description': '',
-            'Job Application URL': '',
-            'Job Type': '',
-            'Job Location': '',
-            'Preferred Years of Experience': '',
-            'Preferred Previous Job Titles': '',
-            'Salary': '',
-            'Preferred Certifications': '',
-            'Soft Skills': '',
-            'Technical Skills': '',
-            'Preferred Majors': '',
-            'Min GPA requirement': '',
-            'Work environment': ''
+            'title': None,
+            'description': None,
+            'application_url': None,
+            'job_type': [],
+            'job_locations': [],
+            'preferred_years_experience': [],
+            'preferred_previous_job_title': None,
+            'salary': None,
+            'preferred_certification': [],
+            'preferred_soft_skill': [],
+            'preferred_technical_skill': [],
+            'job_preferred_major': [],
+            'job_gpa': None,
+            'error_message': None,
+            'success': None,
+            'source': 'taleo'
+            #"'Work environment': '',
+            #'is_nation_wid': None
         }
 
         self.__xpath_dict = {
             "title": ['//*[@id="requisitionDescriptionInterface.reqTitleLinkAction.row1"]'],
             "description": ['//*[@id="requisitionDescriptionInterface.ID1722.row1"]',
                             '//*[@id="requisitionDescriptionInterface.ID2011.row1"]',
-                            '//*[@id="requisitionDescriptionInterface.ID1531.row1"]'],
+                            '//*[@id="requisitionDescriptionInterface.ID1531.row1"]'
+                            '//*[@id="requisitionDescriptionInterface.ID1669.row1"]',
+                            ],
             "job_type": ['//*[@id="requisitionDescriptionInterface.ID1808.row1"]',
-                          '//*[@id="requisitionDescriptionInterface.ID1912.row1"]',
-                          '//*[@id="requisitionDescriptionInterface.ID1603.row1"]'],
+                         '//*[@id="requisitionDescriptionInterface.ID1912.row1"]',
+                         '//*[@id="requisitionDescriptionInterface.ID1603.row1"]',
+                         '//*[@id="requisitionDescriptionInterface.ID1977.row1"]'
+                         ],
             "job_location": ['//*[@id="requisitionDescriptionInterface.ID1724.row1"]',
                              '//*[@id="requisitionDescriptionInterface.ID1714.row1"]',
-                             '//*[@id="requisitionDescriptionInterface.ID1657.row1"]']
+                             '//*[@id="requisitionDescriptionInterface.ID1657.row1"]',
+                             '//*[@id="requisitionDescriptionInterface.ID1827.row1"]'
+                             ]
         }
-
-
 
     def scrape(self, driver, keywords_dict, job_url):
         try:
+            if not re.search(r'The job is no longer available', driver.page_source):
 
-            # Title
-            for xpath in self.__xpath_dict['title']:
-                result = driver.find_elements_by_xpath(xpath)
+                # Title
+                try:
+                    for xpath in self.__xpath_dict['title']:
+                        result = driver.find_elements_by_xpath(xpath)
+                        if result:
+                            self.__values_dict['title'] = result[0].text
+                            break
+                except Exception as e:
+                    pass
+
+                # Description
+                try:
+                    for xpath in self.__xpath_dict['description']:
+                        # result = driver.find_elements_by_xpath(xpath)
+                        result = driver.find_elements_by_xpath('//*[@id="requisitionDescriptionInterface.ID1669.row1"]')
+                        if result:
+                            # save the HTML tags
+                            self.__values_dict['description'] = (result[0]).get_attribute('innerHTML')
+                            break
+                except Exception as e:
+                    pass
+                # Application URL
+                self.__values_dict['application_url'] = job_url
+
+                # job types
+                for xpath in self.__xpath_dict['job_type']:
+                    
+                    try:
+                        if driver.find_elements_by_xpath(xpath):
+                            results = driver.find_elements_by_xpath(xpath)
+                            job_to_compare = self.__data_cleaning.MatcherParser(results[0].text)
+
+                            if job_to_compare == 'fulltime':
+
+                                if self.__tools_obj.search_keyword(self.__regex_dict['internship'], self.__values_dict['description']):
+                                    self.__values_dict['job_type'].append('full-time-int')
+                                else:
+                                    self.__values_dict['job_type'].append('full-time')
+
+                            elif job_to_compare == 'parttime':
+                                
+                                if  self.__tools_obj.search_keyword(self.__regex_dict['internship'], self.__values_dict['description']):
+                                    self.__values_dict['job_type'].append('part-time-int')
+                                else:
+                                    self.__values_dict['job_type'].append('part-time')
+                            
+                            elif job_to_compare == 'intern':
+                                self.__values_dict['job_type'].append('full-time-int')
+                            
+                            elif job_to_compare == 'experienced':
+                                self.__values_dict['job_type'].append('full-time')
+
+                            break  
+                    except Exception as e:
+                        pass
+                # job location
+                for xpath in self.__xpath_dict['job_location']:
+                    try:
+                        result = driver.find_elements_by_xpath(xpath)
+                        if result:
+                            element = driver.find_elements_by_xpath(xpath)[0].text
+                            element = element.replace("Non-Japan Asia-","").replace("Americas", "").replace("Europe, Middle East, Africa", "")
+                            location_list_aux = element.split(",")
+                            if len(location_list_aux) == 2:
+                                location_list = location_list_aux[1].split("-")
+                            else:
+                                location_list = element.split("-")
+                            location_dict = {
+                                "country": None,
+                                "state": None,
+                                "city": None
+                            }
+                            if len(location_list) == 1:
+                                location_dict['country'] = location_list[0].lstrip(' ').rstrip(' ')
+
+                            elif len(location_list) == 2:
+                                aux = location_list[-1].lstrip(' ').rstrip(' ')
+                                country = location_list[-2].lstrip(' ').rstrip(' ')
+                                if country == "USA":
+                                    country = "United States"
+                                    for sta, abrev in usa_states.us_state_to_abbrev.items():
+                                        if abrev == aux:
+                                            aux = sta
+                                dict_aux = {'country': None,
+                                            'state': None,
+                                            'city': None}
+
+                                for loc in keywords_dict['locations']:
+
+                                    if aux in loc['city'] and country in loc['country']:
+                                        if aux == loc['city'] and aux == loc['state']:
+                                            state_1 = loc['state']
+                                            dict_aux = {'country': country,
+                                                        'state': state_1,
+                                                        'city': aux}
+                                            break
+                                        else:
+                                            state_1 = loc['state']
+                                            dict_aux = {'country': country,
+                                                        'state': state_1,
+                                                        'city': aux}
+
+                                    elif aux in loc['state']:
+                                        # if aux in usa_states.values():
+                                        # aux = usa_states[aux]
+                                        if aux in keywords_dict['locations']:
+                                            dict_aux = {'country': country,
+                                                        'state': aux,
+                                                        'city': loc['city']}
+                                    elif aux in loc['country']:
+                                        dict_aux = {'country': aux,
+                                                    'state': None,
+                                                    'city': None}
+                                        break
+                                    else:
+                                        if country in loc['country']:
+                                            dict_aux = {'country': country,
+                                                        'state': None,
+                                                        'city': None}
+                                            break
+
+                                location_dict['country'] = dict_aux['country']
+                                location_dict['state'] = dict_aux['state']
+                                location_dict['city'] = dict_aux['city']
+
+                                """dict_aux = next(item for item in keywords_dict['locations'] if item['country'] in country and (item['city'] in aux or item['state'] in aux))
+                                location_dict['country'] = dict_aux['country']
+                                location_dict['state'] =  dict_aux['state']
+                                location_dict['city'] =  dict_aux['city']
+                                #location_dict['country'] = location_list[-2].lstrip(' ').rstrip(' ')
+                                #location_dict['state'] = location_list[-1].lstrip(' ').rstrip(' ')"""
+
+                            elif len(location_list)>=3:
+                                city = location_list[-1].lstrip(' ').rstrip(' ')
+                                state = location_list[-2].lstrip(' ').rstrip(' ')
+                                country = location_list[-3].lstrip(' ').rstrip(' ')
+
+                                if country == "United States of America" or country == "USA" :
+                                    country = "United States"
+                                    for sta, abrev in usa_states.us_state_to_abbrev.items():
+                                        if abrev == state:
+                                            state = sta
+                                    if city == "New York":
+                                        city = "New York City"
+
+                                for loc in keywords_dict['locations']:
+                                    if country in loc['country'] and state in loc['state'] and city in loc['city']:
+                                        location_dict['country'] = loc['country']
+                                        location_dict['state'] = loc['state']
+                                        location_dict['city'] = loc['city']
+                                    elif country in loc['country'] and state in loc['state'] :
+                                        location_dict['country'] = country
+                                        location_dict['state'] = state
+                                        location_dict['city'] = city
+                                    elif country in loc['country'] and city in loc['city']:
+                                        location_dict['country'] = country
+                                        location_dict['state'] = loc['state']
+                                        location_dict['city'] = city
+
+
+                                   # dict_aux = next(item for item in keywords_dict['locations'] if item['country'] in country and item['city'] in city and item['state'] in state)
+
+                            self.__values_dict['job_locations'].append(location_dict)
+                    except Exception as e:
+                        pass
+
+                # years of experience
+                years_list = self.__regex_dict['Years of Experience'].findall(driver.page_source)
+
+                if not years_list:
+                    if re.search('years', self.__values_dict['title']):
+                        years_list = re.findall(r'([0-9]+)', self.__values_dict['title'])
+
+                if years_list:
+                    self.__values_dict['preferred_years_experience'] = years_list
+
+                # Previous job titles
+                if self.__tools_obj.search_keyword(keywords_dict['Titles'], driver.page_source):
+                    self.__values_dict['preferred_previous_job_title'] = self.__tools_obj.search_keyword(
+                        keywords_dict['Titles'], driver.page_source)
+
+                # Salary
+                result = self.__regex_dict['Salary'].findall(driver.page_source)
                 if result:
-                    self.__values_dict['Job Title'] = result[0].text
-                    break
+                    try:
+                        self.__values_dict['salary'] = int(result[0])
+                    except Exception as e:
+                        pass
 
-            # Description
-            for xpath in self.__xpath_dict['description']:
-                result = driver.find_elements_by_xpath(xpath)
+                # Preferred Certifications
+                if self.__tools_obj.search_keyword(keywords_dict['Certifications'], driver.page_source):
+                    self.__values_dict['preferred_certification'] = self.__tools_obj.search_keyword(
+                        keywords_dict['Certifications'], driver.page_source)
+
+                # Soft Skills
+                if self.__tools_obj.search_keyword(keywords_dict['Soft Skills'], driver.page_source):
+                    self.__values_dict['preferred_soft_skill'] = self.__tools_obj.search_keyword(
+                        keywords_dict['Soft Skills'], driver.page_source)
+
+                # Technical Skills
+                if self.__tools_obj.search_keyword(keywords_dict['Technical Skills'], driver.page_source):
+                    self.__values_dict['preferred_technical_skill'] = self.__tools_obj.search_keyword(
+                        keywords_dict['Technical Skills'], driver.page_source)
+
+                # Preferred Majors
+                if self.__tools_obj.search_keyword(keywords_dict['Majors'], driver.page_source):
+                    self.__values_dict['job_preferred_major'] = self.__tools_obj.search_keyword(
+                        keywords_dict['Majors'], driver.page_source)
+
+                # Salary
+                result = self.__regex_dict['GPA'].findall(driver.page_source)
                 if result:
-                    # save the HTML tags
-                    self.__values_dict['Job Description'] = (result[0]).get_attribute('innerHTML')
-                    break
+                    try:
+                        self.__values_dict['job_gpa'] = int(result[0])
+                    except Exception as e:
+                        pass
+                
+                self.__values_dict['success'] = True
 
-            # Application URL
-            self.__values_dict['Job Application URL'] = job_url
-
-            # job types
-            for xpath in self.__xpath_dict['job_type']:
-                result = driver.find_elements_by_xpath(xpath)
-                if result:
-
-                    aux = self.__data_cleaning.MatcherParser(result[0].text)
-
-                    if 'experienced' in self.__data_cleaning.MatcherParser(result[0].text):
-                        self.__values_dict['Job Type'] = "Full Time"
-                    else:
-                        self.__values_dict['Job Type'] = result[0].text
-                    break
-
-            # job location
-            for xpath in self.__xpath_dict['job_location']:
-                result = driver.find_elements_by_xpath(xpath)
-                if result:
-                    # save the HTML tags
-                    self.__values_dict['Job Location'] = result[0].text
-                    break
-
-            # years of experience
-            years_list = self.__regex_dict['Years of Experience'].findall(driver.page_source)
-            aux = ''
-            for year in years_list:
-                if not aux:
-                    aux = int(year)
-                else:
-                    if int(year) < aux:
-                        aux = int(year)
-
-            self.__values_dict['Preferred Years of Experience'] = aux
-
-            # Previous job titles
-            self.__values_dict['Preferred Previous Job Titles'] = self.__tools_obj.search_keyword(
-                keywords_dict['Titles'], driver.page_source)
-
-            # Salary
-            result = self.__regex_dict['Salary'].findall(driver.page_source)
-            if result:
-                self.__values_dict['Salary'] = result[0]
-
-            # Preferred Certifications
-            self.__values_dict['Preferred Certifications'] = self.__tools_obj.search_keyword(
-                keywords_dict['Certifications'], driver.page_source)
-
-            # Soft Skills
-            self.__values_dict['Soft Skills'] = self.__tools_obj.search_keyword(
-                keywords_dict['Soft Skills'], driver.page_source)
-
-            # Technical Skills
-            self.__values_dict['Technical Skills'] = self.__tools_obj.search_keyword(
-                keywords_dict['Technical Skills'], driver.page_source)
-
-            # Preferred Majors
-            self.__values_dict['Preferred Majors'] = self.__tools_obj.search_keyword(
-                keywords_dict['Majors'], driver.page_source)
-
-            # Salary
-            result = self.__regex_dict['GPA'].findall(driver.page_source)
-            if result:
-                self.__values_dict['Min GPA requirement'] = result[0]
-
-            # Work environment
-            if self.__regex_dict['Hybrid environment'].search(driver.page_source):
-                self.__values_dict['Work environment'] = "Hybrid"
-            elif self.__regex_dict['Virtual environment'].search(driver.page_source):
-                if self.__regex_dict['Physical environment'].search(driver.page_source):
-                    self.__values_dict['Work environment'] = "Hybrid"
-                else:
-                    self.__values_dict['Work environment'] = "Virtual"
-            elif self.__regex_dict['Physical environment'].search(driver.page_source):
-                self.__values_dict['Work environment'] = "Physical"
-
-
-
-            return self.__values_dict
+            else:
+                # the job is no longer avaible
+                self.__values_dict['success'] = False
+                self.__values_dict['error_message'] = "The job is no longer available"               
+                
         except Exception as e:
+            self.__values_dict['success'] = False
+
             self.__logger.error(f"::Scraper:: Error found; {e}")
-            raise
+        
+        return self.__values_dict
+
