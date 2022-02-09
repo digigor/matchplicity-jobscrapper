@@ -17,6 +17,9 @@ The data fields keeping in mind are the following:
 - job_preferred_major : array|object
 - job_gpa : digit
 - job_locations : array|object
+- success : bool
+- error_message: string
+- source: string
 
 ### Dependencies.
 
@@ -48,11 +51,9 @@ Tested on Python 3.8
 
 -PORT: Set the port to be used on the API
     
-2) install requirements doing:
+2) install firefox browser on your machine
 
-```pip install -r requirements.txt```.
-
-3) execute```python3 app.py runserver``` from the project's directory
+3) Use the dockerfile to install run the API
     
 #### Notes or Considerations
 
@@ -103,6 +104,7 @@ Otherwise the value of results['error_message'] will be "Job Id missing or wrong
 }
 ```
 - If there an error with some url or something related to the spefic url you will receive the proper messages on results['error_message]
+
 
 #### Example of usage:
 ```
