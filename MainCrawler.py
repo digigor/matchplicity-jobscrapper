@@ -5,7 +5,7 @@ import pandas
 from concurrent.futures import ThreadPoolExecutor
 from dependencies import tools
 from config import *
-from scrapers import myworkdayjobs, taleo
+from scrapers import myworkdayjobs, taleo , myworkdayjobs_fromapi
 import json
 
 
@@ -71,32 +71,9 @@ class Crawler:
             # Requests strategy
             # Agregar mas urls de Requests aqui
             if 'myworkdayjobs' in job_url:
-                results['source'] = 'myworkdayjobs'
-                req = session.get(job_url)
 
-                if req.status_code == 200:
+                results = myworkdayjobs_fromapi.Scraper().scrape(job_url, self.__keywords_dict)
 
-                    if 'myworkdayjobs' in job_url:
-                        try:
-                            job_json = json.loads(req.text)
-                            if job_json['openGraphAttributes']['title']:
-                                results = myworkdayjobs.Scraper().scrape(req.text, self.__keywords_dict)
-                            else:
-                                results['success'] = False
-                                results['error_message'] = f'Error: The job is no longer available.'
-
-                        except Exception as e:
-                            results['success'] = False
-                            results['error_message'] = f'Error: Generic error with taleo crawler; Error: {e}'
-                            
-                else:
-                    results['success'] = False
-                    results['error_message'] = f'Error: The job is no longer available.'
-
-                    # error job url
-                    self.__logger.error(f"Status Code Error: {req.status_code}; Url: {req.url}")
-                
-                #self.__result_list.append(results)
 
             # Selenium Strategy
             # Agregar mas urls de selenium aqui
