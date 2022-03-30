@@ -63,6 +63,14 @@ class Scraper:
           for loc in job_json['jobPostingInfo']['additionalLocations']:
             list_location.append(loc)
 
+      if list_location:
+        for loc in list_location:
+          location =  self.update_location(loc, keywords_dict)
+          print(location)
+
+
+
+
 
       self.__values_dict['success'] = True
 
@@ -73,23 +81,81 @@ class Scraper:
 
     return self.__values_dict
 
+  def update_location(self, loc, keywords_dict):
+    try:
+      if "-" in loc:
+        location = loc.split("-")
+      elif "," in loc:
+        location = loc.split(",")
+      else:
+        location = loc
+
+      location_dict = {
+        "country": None,
+        "state": None,
+        "city": None
+      }
+
+      if len(location) == 1:
+        location_dict['country'] = location[0].lstrip(' ').rstrip(' ')
+
+      elif len(location) == 2:
+        aux = location[1].lstrip(' ').rstrip(' ')
+        country = location[0].lstrip(' ').rstrip(' ')
+        if country == "USA":
+          country = "United States"
+          for sta, abrev in usa_states.us_state_to_abbrev.items():
+            if abrev == aux:
+              aux = sta
+
+        for loc in keywords_dict['locations']:
+          if country in country in loc['country']:
+            if aux in loc['state']:
+              dict_aux = {'country': country,
+                          'state': aux,
+                          'city': loc['city']}
+
+            elif aux in loc['city']:
+              dict_aux = {'country': country,
+                          'state': loc['state'],
+                          'city': aux}
+            else:
+              dict_aux = {'country': country,
+                          'state': None,
+                          'city': aux}
+
+        location_dict['country'] = dict_aux['country']
+        location_dict['state'] = dict_aux['state']
+        location_dict['city'] = dict_aux['city']
+
+      elif len(location) == 3:
+        city = location[-1].lstrip(' ').rstrip(' ')
+        state = location[-2].lstrip(' ').rstrip(' ')
+        country = location[-0].lstrip(' ').rstrip(' ')
+        if country == "USA":
+          country = "United States"
+          for sta, abrev in usa_states.us_state_to_abbrev.items():
+            if abrev == state:
+              state = sta
 
 
+        for loc in keywords_dict['locations']:
+          if country in loc['country'] and state in loc['state'] and city in loc['city']:
+            location_dict['country'] = loc['country']
+            location_dict['state'] = loc['state']
+            location_dict['city'] = loc['city']
+          elif country in loc['country'] and state in loc['state']:
+            location_dict['country'] = country
+            location_dict['state'] = state
+            location_dict['city'] = city
+          elif country in loc['country'] and city in loc['city']:
+            location_dict['country'] = country
+            location_dict['state'] = loc['state']
+            location_dict['city'] = city
+
+      # self.__values_dict['job_locations'].append(location_dict)
+      return location_dict
+    except Exception as e:
+      pass
 
 
-
-  # # base_url = 'https://workday.wd5.myworkdayjobs.com/en-US/Workday/job/USA-CA-Pleasanton/Integrated-Business-Planning-Director_JR-62624'
-# list_url = [
-#   'https://workday.wd5.myworkdayjobs.com/en-US/Workday/job/Canada-BC-Vancouver/QA-Engineer---Talent_JR-59819',
-#   'https://workday.wd5.myworkdayjobs.com/en-US/Workday/job/USA-CA-Pleasanton/Integrated-Business-Planning-Director_JR-62624',
-#   'https://workday.wd5.myworkdayjobs.com/en-US/Workday/job/Ireland-Dublin/Public-Cloud-Software-Development-Engineer_JR-57427',
-#   'https://workday.wd5.myworkdayjobs.com/en-US/Workday/job/Ireland-Dublin/Software-Developer-Network-Automation_JR-57626',
-#   'https://workday.wd5.myworkdayjobs.com/en-US/Workday/job/Ireland-Dublin/Site-Reliability-Engineer---Tenant-Lifecycle-Engineering_JR-65474',
-#   'https://workday.wd5.myworkdayjobs.com/en-US/Workday/job/United-Kingdom-London/Channel-Operations-Analyst_JR-63806'
-#
-# ]
-
-
-  #base_url = 'https://workday.wd5.myworkdayjobs.com/en-US/Workday/job/Canada-BC-Vancouver/QA-Engineer---Talent_JR-59819'
-
-  # print(response.text)
