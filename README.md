@@ -178,5 +178,13 @@ curl --location --request POST 'http://151.80.33.51:6789/get-job' \
 - added error_code and msg on JSON response structure.
 - added more controls and error messages from the crawler.
 
+04/04/2020
+- added scraper for new domains in myworkdayjobs: 
+* workday
+* alvarezandmarsal
+* roberthalf
+
+- in alvarezandmarsal and roberthalf improve parser for location
+
 
 'Francisco Battan. Informatics Engineer.'

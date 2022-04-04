@@ -47,8 +47,7 @@ class Scraper:
             #'is_nation_wid': None
         }
 
-
-    def scrape(self, req, keywords_dict):
+    def scrape(self, job_url, session, keywords_dict):
 
         """def abreviation(self, countr, stat):
 
@@ -61,7 +60,8 @@ class Scraper:
             return countr, stat"""
 
         try:
-            job_json = json.loads(req)
+            req = session.get(job_url)
+            job_json = json.loads(req.text)
 
             # title
             if job_json['openGraphAttributes']['title']:
@@ -88,7 +88,7 @@ class Scraper:
 
                         if jobtype == 'fulltime':
 
-                            if  self.__tools_obj.search_keyword(self.__regex_dict['internship'], job_json['openGraphAttributes']['description']):
+                            if self.__tools_obj.search_keyword(self.__regex_dict['internship'], job_json['openGraphAttributes']['description']):
                                 self.__values_dict['job_type'].append('full-time-int')
                             else:
                                 self.__values_dict['job_type'].append('full-time')

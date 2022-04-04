@@ -56,6 +56,9 @@ class Scraper:
       elif 'alvarezandmarsal' in job_url:
         job = re.findall(r'(?:job/)(.*)', job_url)[0]
         url_final = f"https://alvarezandmarsal.wd1.myworkdayjobs.com/wday/cxs/alvarezandmarsal/alvarezandmarsalp/job/{job}"
+      elif 'roberthalf' in job_url:
+        job = re.findall(r'(?:job/)(.*)', job_url)[0]
+        url_final =f'https://roberthalf.wd1.myworkdayjobs.com/wday/cxs/roberthalf/RobertHalfStaffingCareers/job/{job}'
 
       response = requests.request("GET", url_final)
       job_json = json.loads(response.text)
@@ -77,17 +80,38 @@ class Scraper:
 
       # location
       list_location_update = []
-      if job_json['jobPostingInfo']['location']:
-        location = self.update_location(job_json['jobPostingInfo']['location'], keywords_dict)
-        list_location_update.append(location)
-      try:
-        if job_json['jobPostingInfo']['additionalLocations']:
-          for loc in job_json['jobPostingInfo']['additionalLocations']:
-            location = self.update_location(loc, keywords_dict)
-            list_location_update.append(location)
-      except Exception as e:
-        pass
-      self.__values_dict['job_locations'] = list_location_update
+      if 'roberthalf' in job_url:
+        list_loc = []
+        if job_json['jobPostingInfo']['country']['descriptor']:
+          country = job_json['jobPostingInfo']['country']['descriptor']
+          list_loc.append(country)
+          # location_dict = {
+          #   "country":job_json['jobPostingInfo']['country']['descriptor'],
+          #   "state": None,
+          #   "city": None
+          # }
+          if job_json['jobPostingInfo']['location']:
+            city = job_json['jobPostingInfo']['location']
+            list_loc.append(city)
+            aux = f'{list_loc[0]} , {list_loc[1]}'
+          location = self.update_location(aux, keywords_dict)
+          list_location_update.append(location)
+          # list_location_update.append(location_dict)
+          self.__values_dict['job_locations'] = list_location_update
+
+      else:
+
+        if job_json['jobPostingInfo']['location']:
+          location = self.update_location(job_json['jobPostingInfo']['location'], keywords_dict)
+          list_location_update.append(location)
+        try:
+          if job_json['jobPostingInfo']['additionalLocations']:
+            for loc in job_json['jobPostingInfo']['additionalLocations']:
+              location = self.update_location(loc, keywords_dict)
+              list_location_update.append(location)
+        except Exception as e:
+          pass
+        self.__values_dict['job_locations'] = list_location_update
 
 
       self.__values_dict['success'] = True
@@ -160,19 +184,24 @@ class Scraper:
       elif len(location) == 2:
         aux = location[1].lstrip(' ').rstrip(' ')
         country = location[0].lstrip(' ').rstrip(' ')
-        dict_aux ={
+        dict_aux = {
           'country': country,
           "state": None,
-          "city": None
+          "city": aux.title()
         }
         if country == "USA":
           country = "United States"
+        elif country == 'United States of America':
+          country = "United States"
+          dict_aux['country'] = country
+
+
           for sta, abrev in usa_states.us_state_to_abbrev.items():
             if abrev == aux:
               aux = sta
 
         for loc in keywords_dict['locations']:
-          if country in country in loc['country']:
+          if country in loc['country']:
             if aux in loc['state']:
               dict_aux = {'country': country,
                           'state': aux,
