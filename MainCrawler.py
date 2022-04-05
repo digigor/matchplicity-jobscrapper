@@ -85,7 +85,7 @@ class Crawler:
                 if 'abbott.wd5' in job_url:
                     results = myworkdayjobs.Scraper().scrape(job_url, session, keywords_dict)
                 else:
-                    results = myworkdayjobs_fromapi.Scraper.scrape(job_url, keywords_dict)
+                    results = myworkdayjobs_fromapi.Scraper().scrape(job_url, keywords_dict)
 
 
             # Selenium Strategy

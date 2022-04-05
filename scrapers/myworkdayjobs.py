@@ -111,89 +111,14 @@ class Scraper:
                         aux.append(element['imageLabel'])
                 except:
                     pass
+            list_location_update = []
             if aux:
+                for loc in aux:
+                    location = self.update_location(loc, keywords_dict)
+                    list_location_update.append(location)
+                    self.__values_dict['job_locations'] = list_location_update
 
-                try:
-                    if "-" in aux[0]:
-                        location = aux[0].split("-")
-                    elif "," in aux[0]:
-                        location = aux[0].split(",")
-                    else:
-                        location = aux
-                    location_dict = {
-                        "country": None,
-                        "state": None,
-                        "city": None
-                    }
 
-                    if len(location) == 1:
-                        location_dict['country'] = location[0].lstrip(' ').rstrip(' ')
-
-                    elif len(location) == 2:
-                        aux = location[1].lstrip(' ').rstrip(' ')
-                        country = location[0].lstrip(' ').rstrip(' ')
-                        if country == "USA":
-                           country = "United States"
-                           for sta , abrev in usa_states.us_state_to_abbrev.items():
-                                if abrev == aux:
-                                    aux = sta
-
-                        for loc in keywords_dict['locations']:
-                            if country in country in loc['country']:
-                                if aux in loc['state']:
-                                    dict_aux = {'country': country,
-                                                'state': aux,
-                                                'city': loc['city']}
-
-                                elif aux in loc['city']:
-                                    dict_aux = {'country': country,
-                                                'state': loc['state'],
-                                                'city': aux}
-                                else:
-                                    dict_aux = {'country': country,
-                                                'state': None,
-                                                'city': aux}
-
-                        location_dict['country'] = dict_aux['country']
-                        location_dict['state'] = dict_aux['state']
-                        location_dict['city'] = dict_aux['city']
-
-                    elif len(location) == 3:
-                        city = location[-1].lstrip(' ').rstrip(' ')
-                        state = location[-2].lstrip(' ').rstrip(' ')
-                        country = location[-3].lstrip(' ').rstrip(' ')
-                        if country == "USA":
-                            country = "United States"
-                            for sta, abrev in usa_states.us_state_to_abbrev.items():
-                                if abrev == state:
-                                    state = sta
-
-                        # try:
-                        #     dict_aux = next(item for item in keywords_dict['locations'] if item['country'] in country and item['city'] in city and item['state'] in state)
-                        #     location_dict['country'] = dict_aux['country']
-                        #     location_dict['state'] = dict_aux['state']
-                        #     location_dict['city'] = dict_aux['city']
-                        # except Exception as e:
-                        #     location_dict['country'] = country
-                        #     location_dict['state'] = state
-                        #     location_dict['city'] = city
-                        for loc in keywords_dict['locations']:
-                            if country in loc['country'] and state in loc['state'] and city in loc['city']:
-                                location_dict['country'] = loc['country']
-                                location_dict['state'] = loc['state']
-                                location_dict['city'] = loc['city']
-                            elif country in loc['country'] and state in loc['state']:
-                                location_dict['country'] = country
-                                location_dict['state'] = state
-                                location_dict['city'] = city
-                            elif country in loc['country'] and city in loc['city']:
-                                location_dict['country'] = country
-                                location_dict['state'] = loc['state']
-                                location_dict['city'] = city
-
-                    self.__values_dict['job_locations'].append(location_dict)
-                except Exception as e:
-                    pass
 
             years_list = self.__regex_dict['Years of Experience'].findall(job_json['openGraphAttributes']['description'])
             aux = ''
@@ -251,6 +176,120 @@ class Scraper:
             self.__logger.error(f"::Scraper:: Error found; {e}")
 
         return self.__values_dict
+
+    def update_location(self, loc, keywords_dict):
+        try:
+            location = self.clean_location(loc)
+
+            location_dict = {
+                "country": None,
+                "state": None,
+                "city": None
+            }
+            if len(location) == 1:
+                location_dict['country'] = location[0].lstrip(' ').rstrip(' ')
+
+            elif len(location) == 2:
+                aux = location[1].lstrip(' ').rstrip(' ')
+                country = location[0].lstrip(' ').rstrip(' ')
+                dict_aux = {
+                    'country': country,
+                    "state": None,
+                    "city": aux.title()
+                }
+                if country == "USA":
+                    country = "United States"
+                elif country == 'United States of America':
+                    country = "United States"
+                    dict_aux['country'] = country
+
+                    for sta, abrev in usa_states.us_state_to_abbrev.items():
+                        if abrev == aux:
+                            aux = sta
+
+                for loc in keywords_dict['locations']:
+                    if country in loc['country']:
+                        if aux in loc['state']:
+                            dict_aux = {'country': country,
+                                        'state': aux,
+                                        'city': loc['city']}
+
+                        elif aux in loc['city']:
+                            dict_aux = {'country': country,
+                                        'state': loc['state'],
+                                        'city': aux}
+                        # else:
+                        #   dict_aux = {'country': country,
+                        #               'state': None,
+                        #               'city': aux}
+
+                location_dict['country'] = dict_aux['country']
+                location_dict['state'] = dict_aux['state']
+                location_dict['city'] = dict_aux['city']
+
+            elif len(location) == 3:
+                city = location[-1].lstrip(' ').rstrip(' ')
+                state = location[-2].lstrip(' ').rstrip(' ')
+                country = location[-0].lstrip(' ').rstrip(' ')
+                if country == "USA" or country == "US":
+                    country = "United States"
+                    for sta, abrev in usa_states.us_state_to_abbrev.items():
+                        if abrev == state:
+                            state = sta
+
+                for loc in keywords_dict['locations']:
+                    if country in loc['country'] and state in loc['state'] and city in loc['city']:
+                        location_dict['country'] = loc['country']
+                        location_dict['state'] = loc['state']
+                        location_dict['city'] = loc['city']
+                        break
+                    elif country in loc['country'] and state in loc['state']:
+                        location_dict['country'] = country
+                        location_dict['state'] = state
+                        location_dict['city'] = city
+                        break
+                    elif country in loc['country'] and city in loc['city']:
+                        location_dict['country'] = country
+                        location_dict['state'] = loc['state']
+                        location_dict['city'] = city
+                        break
+                    else:
+                        location_dict['country'] = country
+                        location_dict['state'] = state
+                        location_dict['city'] = city
+
+            # self.__values_dict['job_locations'].append(location_dict)
+            return location_dict
+        except Exception as e:
+            pass
+
+    def clean_location(self, loc):
+        try:
+            # split for '-'
+            if "-" in loc:
+                aux_location = []
+                list_split_location = loc.split("-")
+                for locat in list_split_location:
+                    if "," in locat:
+                        sublist_locat = locat.split(",")
+                        aux_location.extend(sublist_locat)
+                    else:
+                        aux_location.append(locat)
+                if len(aux_location) == 3:
+                    aux = aux_location[1]
+                    aux_location[1] = aux_location[2]
+                    aux_location[2] = aux
+                location = aux_location
+
+            # split for ','
+            elif "," in loc:
+                location = loc.split(",")
+            else:
+                location = []
+                location.append(loc)
+            return location
+        except Exception as e:
+            return loc
 
 
 

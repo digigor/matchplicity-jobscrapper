@@ -58,7 +58,7 @@ class Scraper:
         url_final = f"https://alvarezandmarsal.wd1.myworkdayjobs.com/wday/cxs/alvarezandmarsal/alvarezandmarsalp/job/{job}"
       elif 'roberthalf' in job_url:
         job = re.findall(r'(?:job/)(.*)', job_url)[0]
-        url_final =f'https://roberthalf.wd1.myworkdayjobs.com/wday/cxs/roberthalf/RobertHalfStaffingCareers/job/{job}'
+        url_final = f'https://roberthalf.wd1.myworkdayjobs.com/wday/cxs/roberthalf/RobertHalfStaffingCareers/job/{job}'
 
       response = requests.request("GET", url_final)
       job_json = json.loads(response.text)
