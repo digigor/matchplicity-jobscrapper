@@ -23,9 +23,9 @@ The data fields keeping in mind are the following:
 
 ### Dependencies.
 
-* Python 3.8+ (apt install python3-pip)
+* Python 3.8+ (```apt install python3-pip```)
 
-* Firefox installed (apt install firefox)
+* Firefox installed (```apt install firefox```)
 
 * Geckodriver on PATH (in this case is the project's directory)
 
@@ -57,6 +57,18 @@ Tested on Python 3.8
 
 3) execute```python3 app.py runserver```
     
+To run the api in background, we recommend run this app using screen. Do that with the next command:
+
+```screen -mdS tk-digigor sh -c "cd /the/project/path ; python3 app.py runserver"```
+
+To attach the screen use the next command: 
+
+```screen -r tk-digigor```
+
+To detach the screen without close, press "ctrl + A + D"
+
+To see all the screens running ```screen -ls```
+
 #### Notes or Considerations
 
 - For the taleo platform and the ones using Selenium the server will consume at least 500 mb of ram and as many cpu as needed, per instance.
