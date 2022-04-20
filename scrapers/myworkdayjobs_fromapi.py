@@ -50,17 +50,29 @@ class Scraper:
 
   def scrape(self, job_url, keywords_dict):
     try:
-      if 'workday.wd5' in job_url:
-        job = re.findall(r'(?:job/)(.*)', job_url)[0]
-        url_final = f"https://workday.wd5.myworkdayjobs.com/wday/cxs/workday/Workday/job/{job}"
-      elif 'alvarezandmarsal' in job_url:
-        job = re.findall(r'(?:job/)(.*)', job_url)[0]
-        url_final = f"https://alvarezandmarsal.wd1.myworkdayjobs.com/wday/cxs/alvarezandmarsal/alvarezandmarsalp/job/{job}"
-      elif 'roberthalf' in job_url:
-        job = re.findall(r'(?:job/)(.*)', job_url)[0]
-        url_final = f'https://roberthalf.wd1.myworkdayjobs.com/wday/cxs/roberthalf/RobertHalfStaffingCareers/job/{job}'
+
+      # if 'workday.wd5' in job_url:
+      #   job = re.findall(r'(?:job/)(.*)', job_url)[0]
+      #   url_final = f"https://workday.wd5.myworkdayjobs.com/wday/cxs/workday/Workday/job/{job}"
+      # elif 'alvarezandmarsal' in job_url:
+      #   job = re.findall(r'(?:job/)(.*)', job_url)[0]
+      #   url_final = f"https://alvarezandmarsal.wd1.myworkdayjobs.com/wday/cxs/alvarezandmarsal/alvarezandmarsalp/job/{job}"
+      # elif 'roberthalf' in job_url:
+      #   job = re.findall(r'(?:job/)(.*)', job_url)[0]
+      #   url_final = f'https://roberthalf.wd1.myworkdayjobs.com/wday/cxs/roberthalf/RobertHalfStaffingCareers/job/{job}'
+
+      subdomain = re.findall(r'(?:https://)(.*?)(?:.wd)', job_url)[0]
+
+      company = re.findall(r'(?:en-US/)(.*?)(?:/job)', job_url)[0]
+
+      domain = re.findall(r'.*.com', job_url)[0]
+
+      job = re.findall(r'(?:job/)(.*)', job_url)[0]
+
+      url_final = f'{domain}/wday/cxs/{subdomain}/{company}/job/{job}'
 
       response = requests.request("GET", url_final)
+
       job_json = json.loads(response.text)
 
       # title
@@ -100,7 +112,6 @@ class Scraper:
           self.__values_dict['job_locations'] = list_location_update
 
       else:
-
         if job_json['jobPostingInfo']['location']:
           location = self.update_location(job_json['jobPostingInfo']['location'], keywords_dict)
           list_location_update.append(location)
