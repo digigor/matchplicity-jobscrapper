@@ -51,9 +51,11 @@ Tested on Python 3.8
 
 -PORT: Set the port to be used on the API
     
-2) install firefox browser on your machine
+2) install requirements doing:
 
-3) Use the dockerfile to install run the API
+```pip3 install -r requirements```.
+
+3) execute```python3 app.py runserver```
     
 #### Notes or Considerations
 
