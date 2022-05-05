@@ -61,15 +61,19 @@ class Scraper:
       #   job = re.findall(r'(?:job/)(.*)', job_url)[0]
       #   url_final = f'https://roberthalf.wd1.myworkdayjobs.com/wday/cxs/roberthalf/RobertHalfStaffingCareers/job/{job}'
 
-      subdomain = re.findall(r'(?:https://)(.*?)(?:.wd)', job_url)[0]
+      if 'en-US' in job_url:
+        subdomain = re.findall(r'(?:https://)(.*?)(?:.wd)', job_url)[0]
+        company = re.findall(r'(?:en-US/)(.*?)(?:/job)', job_url)[0]
+        domain = re.findall(r'.*.com', job_url)[0]
+        job = re.findall(r'(?:job/)(.*)', job_url)[0]
+        url_final = f'{domain}/wday/cxs/{subdomain}/{company}/job/{job}'
 
-      company = re.findall(r'(?:en-US/)(.*?)(?:/job)', job_url)[0]
-
-      domain = re.findall(r'.*.com', job_url)[0]
-
-      job = re.findall(r'(?:job/)(.*)', job_url)[0]
-
-      url_final = f'{domain}/wday/cxs/{subdomain}/{company}/job/{job}'
+      elif 'CLA' in job_url:
+        subdomain = re.findall(r'(?:https://)(.*?)(?:.wd)', job_url)[0]
+        company = re.findall(r'(?:com/)(.*?)(?:/job/)', job_url)[0]
+        domain = re.findall(r'.*.com', job_url)[0]
+        job = re.findall(r'(?:job/)(.*)', job_url)[0]
+        url_final = f'{domain}/wday/cxs/{subdomain}/{company}/job/{job}'
 
       response = requests.request("GET", url_final)
 
