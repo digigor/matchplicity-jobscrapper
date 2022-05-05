@@ -9,6 +9,9 @@ from requests.adapters import HTTPAdapter
 from config import *
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
+import requests
+import time
+import random
 
 class Tools:
     """
@@ -110,4 +113,47 @@ class Tools:
                 return None
         except Exception as e:
             raise e
+
+    def get_request(self, URL, Headers=None, stream=None, proxydict = None):
+        '''
+            Este metodo se encarga de realizar un GET Requests y asegurarse que tire status 200
+        :param URL: URL del GET requests
+        :param Headers: Diccionario de Headers
+        :return: GetResponse y contenido si status es 200, de lo contrario False
+        '''
+
+        tries = 0
+        ban = 0
+        try:
+            while ban == 0:
+
+                try:
+                    if stream == True:
+                        if proxydict:
+                            get_response = requests.get(URL, headers=Headers, stream=True, proxies=proxydict)
+                        else:
+                            get_response = requests.get(URL, headers=Headers, stream=True)
+                    else:
+                        if proxydict:
+                            get_response = requests.get(URL, headers=Headers, proxies=proxydict)
+                        else:
+                            get_response = requests.get(url=URL, headers=Headers)
+
+                    if get_response.status_code == 200:
+                        b = 1
+                        return get_response
+                    else:
+                        raise
+                except Exception as e:
+                    # self.__logger.error(f'Error found, trying again: {tries}/{5}; Error: {e}; URL: {URL}')
+                    time.sleep((random.randint(1, 3)))
+                    ban = 0
+                    tries += 1
+
+                if tries == 5:
+                    # self.__logger.error('Maximum tries reached')
+                    raise
+        except Exception as e:
+            # self.__logger.error(f'Error found on http_assembler::get_request; error: {e}')
+            raise
 
